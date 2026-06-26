@@ -48,9 +48,11 @@ pnpm format:check                 # prettier --check (what CI runs)
   (`feat`/`fix`/`docs`/`chore`/`ci`/`test`). Every commit needs a `Signed-off-by` trailer.
 - **Changesets** for any change to published behavior: `pnpm changeset`.
 - **Small, focused files**, one responsibility each. Match existing patterns.
-- **Never** commit secrets. The user's OpenRouter key is stored locally
-  (`~/.pagelathe/config.json`, mode 0600) or via `OPENROUTER_API_KEY`; it is sent only to
-  OpenRouter and never logged or printed in full. `.env*` and `.pagelathe/` are git-ignored.
+- **Never** commit secrets. The user's per-provider API keys (OpenRouter / Gemini / OpenAI) are
+  stored locally (`~/.pagelathe/config.json`, mode 0600) or via the matching env var
+  (`OPENROUTER_API_KEY` / `GEMINI_API_KEY` / `OPENAI_API_KEY`); each key is sent **only to that
+  provider's official API** and never logged or printed in full. `.env*` and `.pagelathe/` are
+  git-ignored.
 
 ## Before opening a PR
 
@@ -67,5 +69,6 @@ must all pass (mirrors CI). Add a changeset if you changed published behavior. S
 
 - ✅ Keep generation output bounded by section schemas; prefer static Astro output; keep the CLI
   dependency-light.
-- ❌ Don't introduce a backend or send user keys anywhere but OpenRouter; don't add a UI
-  framework to the generated site without a design decision; don't bypass TDD or skip DCO sign-off.
+- ❌ Don't introduce a backend or send a provider's key anywhere but that provider's official API
+  (OpenRouter, Google, or OpenAI); don't add a UI framework to the generated site without a design
+  decision; don't bypass TDD or skip DCO sign-off.

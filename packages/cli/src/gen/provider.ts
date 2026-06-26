@@ -3,41 +3,43 @@ import type { ZodType } from "zod";
 import type { LlmClient, LlmGenerateOptions } from "./llm.js";
 import { LlmError } from "./llm.js";
 
-const DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
-
-export interface OpenRouterOptions {
-  apiKey: string;
-  model: string;
-  baseUrl?: string;
-  fetchImpl?: typeof fetch;
-  appUrl?: string;
-  appName?: string;
-}
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+const OPENAI_BASE_URL = "https://api.openai.com/v1";
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
   content: string;
 }
 
-export function createOpenRouterClient(opts: OpenRouterOptions): LlmClient {
-  const fetchImpl = opts.fetchImpl ?? fetch;
-  const baseUrl = opts.baseUrl ?? DEFAULT_BASE_URL;
+interface ChatClientConfig {
+  apiKey: string;
+  model: string;
+  baseUrl: string;
+  extraHeaders?: Record<string, string>;
+  fetchImpl?: typeof fetch;
+}
+
+/**
+ * Client for any OpenAI-compatible Chat Completions endpoint with strict
+ * `json_schema` structured output (OpenRouter and OpenAI both qualify).
+ */
+function createChatCompletionsClient(config: ChatClientConfig): LlmClient {
+  const fetchImpl = config.fetchImpl ?? fetch;
 
   async function callOnce(
     messages: ChatMessage[],
     schemaName: string,
     jsonSchema: unknown,
   ): Promise<string> {
-    const res = await fetchImpl(`${baseUrl}/chat/completions`, {
+    const res = await fetchImpl(`${config.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${opts.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
         "Content-Type": "application/json",
-        ...(opts.appUrl ? { "HTTP-Referer": opts.appUrl } : {}),
-        ...(opts.appName ? { "X-Title": opts.appName } : {}),
+        ...(config.extraHeaders ?? {}),
       },
       body: JSON.stringify({
-        model: opts.model,
+        model: config.model,
         messages,
         response_format: {
           type: "json_schema",
@@ -46,7 +48,7 @@ export function createOpenRouterClient(opts: OpenRouterOptions): LlmClient {
       }),
     });
     if (!res.ok) {
-      throw new LlmError(`OpenRouter request failed (HTTP ${res.status}).`, {
+      throw new LlmError(`Provider request failed (HTTP ${res.status}).`, {
         status: res.status,
       });
     }
@@ -54,7 +56,7 @@ export function createOpenRouterClient(opts: OpenRouterOptions): LlmClient {
       choices?: { message?: { content?: string } }[];
     };
     const content = data.choices?.[0]?.message?.content;
-    if (typeof content !== "string") throw new LlmError("OpenRouter returned no content.");
+    if (typeof content !== "string") throw new LlmError("Provider returned no content.");
     return content;
   }
 
@@ -86,7 +88,7 @@ export function createOpenRouterClient(opts: OpenRouterOptions): LlmClient {
           ) {
             continue; // transient server error: retry
           }
-          throw err instanceof LlmError ? err : new LlmError("OpenRouter request error.");
+          throw err instanceof LlmError ? err : new LlmError("Provider request error.");
         }
         const parsed = safeJson(content);
         const result = parsed === undefined ? undefined : schema.safeParse(parsed);
@@ -107,6 +109,44 @@ export function createOpenRouterClient(opts: OpenRouterOptions): LlmClient {
       );
     },
   };
+}
+
+export interface OpenRouterOptions {
+  apiKey: string;
+  model: string;
+  baseUrl?: string;
+  fetchImpl?: typeof fetch;
+  appUrl?: string;
+  appName?: string;
+}
+
+export function createOpenRouterClient(opts: OpenRouterOptions): LlmClient {
+  const extraHeaders: Record<string, string> = {};
+  if (opts.appUrl) extraHeaders["HTTP-Referer"] = opts.appUrl;
+  if (opts.appName) extraHeaders["X-Title"] = opts.appName;
+  return createChatCompletionsClient({
+    apiKey: opts.apiKey,
+    model: opts.model,
+    baseUrl: opts.baseUrl ?? OPENROUTER_BASE_URL,
+    extraHeaders,
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
+export interface OpenAIOptions {
+  apiKey: string;
+  model: string;
+  baseUrl?: string;
+  fetchImpl?: typeof fetch;
+}
+
+export function createOpenAIClient(opts: OpenAIOptions): LlmClient {
+  return createChatCompletionsClient({
+    apiKey: opts.apiKey,
+    model: opts.model,
+    baseUrl: opts.baseUrl ?? OPENAI_BASE_URL,
+    fetchImpl: opts.fetchImpl,
+  });
 }
 
 function safeJson(text: string): unknown {

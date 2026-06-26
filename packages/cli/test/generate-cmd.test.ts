@@ -60,4 +60,23 @@ describe("runGenerate", () => {
       else delete process.env.PAGELATHE_CONFIG_DIR;
     }
   });
+
+  it("names the chosen provider's key + env var when that key is missing", async () => {
+    const prevCfg = process.env.PAGELATHE_CONFIG_DIR;
+    const prevGemini = process.env.GEMINI_API_KEY;
+    const prevGoogle = process.env.GOOGLE_API_KEY;
+    delete process.env.GEMINI_API_KEY;
+    delete process.env.GOOGLE_API_KEY;
+    process.env.PAGELATHE_CONFIG_DIR = tmp();
+    try {
+      await expect(runGenerate({ description: "x", provider: "gemini" })).rejects.toThrow(
+        /--provider gemini|GEMINI_API_KEY/,
+      );
+    } finally {
+      if (prevCfg) process.env.PAGELATHE_CONFIG_DIR = prevCfg;
+      else delete process.env.PAGELATHE_CONFIG_DIR;
+      if (prevGemini) process.env.GEMINI_API_KEY = prevGemini;
+      if (prevGoogle) process.env.GOOGLE_API_KEY = prevGoogle;
+    }
+  });
 });

@@ -10,10 +10,12 @@ plan within 14 days for confirmed issues.
 
 ## Handling of API keys
 
-pagelathe is a local-first tool. Your OpenRouter API key is stored only on your machine
-(in `~/.pagelathe/config.json`, mode `0600`, or via the `OPENROUTER_API_KEY` env var) and
-is sent **only** to OpenRouter. It is never transmitted to any pagelathe-operated service,
-logged, or committed. Reports of any deviation from this are treated as security issues.
+pagelathe is a local-first tool. Your provider API keys (OpenRouter, Gemini, and/or OpenAI)
+are stored only on your machine — in `~/.pagelathe/config.json` (mode `0600`) or via the
+matching env var (`OPENROUTER_API_KEY`, `GEMINI_API_KEY`/`GOOGLE_API_KEY`, or `OPENAI_API_KEY`) —
+and each key is sent **only** to that provider's official API (OpenRouter, Google Generative
+Language, or OpenAI). Keys are never transmitted to any pagelathe-operated service, logged, or
+committed. Reports of any deviation from this are treated as security issues.
 
 ## Supported versions
 
