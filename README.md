@@ -35,11 +35,22 @@ pnpm install && pnpm dev                 # http://localhost:4321
 > **Prerequisites:** Node ≥20.11 for the `pagelathe` CLI; **Node ≥22** to run or build the
 > generated Astro site (the `pnpm dev` / `pnpm build` steps above).
 
+Prefer the **Gemini API** directly (or OpenAI) instead of OpenRouter? Set that provider's key and
+make it active:
+
+```bash
+pagelathe config set-key --provider gemini   # paste your Gemini key (AIza…), or set GEMINI_API_KEY
+pagelathe config use gemini                  # make Gemini your default provider
+pagelathe generate -d "A Postgres branching service for teams"
+# OpenAI is identical: --provider openai (defaults to gpt-5.5)
+```
+
 `generate` classifies your product, plans the sections, and fills on-brand copy and code —
 all bounded by each section's schema, so output is always valid. Edit the generated
 `src/content/landing/index.yaml` or any `src/components/sections/*` to make it yours.
 
-Your key is stored only on your machine and sent only to OpenRouter. See
+Each provider key is stored only on your machine and sent only to that provider's official API
+(OpenRouter, Google, or OpenAI) — never logged or sent anywhere else. See
 [SECURITY.md](./SECURITY.md).
 
 ## Repository tour
