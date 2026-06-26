@@ -64,6 +64,31 @@ required.
 
 Run any command with `--help` for full usage.
 
+## Tweak your page
+
+Iterate with prompts and commands after the first `generate`:
+
+```bash
+# Re-prompt: regenerate from a sharper description (overwrites index.yaml + section content)
+pagelathe generate -d "…emphasize zero-downtime branching and a generous free tier"
+pagelathe generate                         # run with no -d to be prompted interactively
+
+# Different voice: regenerate with another provider/model
+pagelathe generate --provider gemini -m gemini-2.5-pro -d "…"
+
+# Add a section component from the registry (run with a bad name to list them all)
+pagelathe add codeDemo
+```
+
+For surgical, prompt-free edits, change the generated files directly — output stays valid because
+every section is schema-bounded:
+
+- `src/content/landing/index.yaml` — copy, section order, and which sections appear
+- `src/components/sections/*.astro` — markup and styling
+
+> ⚠️ Re-running `generate` regenerates the **whole** page and overwrites `index.yaml`, so commit
+> any hand-edits you want to keep first.
+
 ## Providers & API keys
 
 pagelathe is local-first and bring-your-own-key. It talks to three providers directly — use
