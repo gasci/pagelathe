@@ -1,5 +1,22 @@
 # pagelathe
 
+## 0.4.0
+
+### Minor Changes
+
+- 1150143: Add a live **token counter** and spend guard to `generate`. The CLI now shows a running token
+  total during generation and a final summary (prompt / completion / total), read from each
+  provider's real usage (OpenAI/OpenRouter `usage`, Gemini `usageMetadata`) — including retries.
+  A `--max-tokens <n>` budget (default 100,000; `0` disables) pauses and asks before exceeding it:
+  continue or abort. Non-interactive runs fail safe (abort), and aborting writes nothing.
+
+### Patch Changes
+
+- a2010fe: Section polish: make the **header proportional on mobile** (compact CTA that stays on one
+  line and truncates past 55vw instead of wrapping, a non-shrinking logo, and tighter
+  padding/gaps on small screens), and **keep footer text short** by bounding the footer
+  `brand`/`tagline`/`copyright` and column heading/label fields to tight max lengths.
+
 ## 0.3.1
 
 ### Patch Changes
