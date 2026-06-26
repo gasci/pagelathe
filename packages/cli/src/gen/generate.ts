@@ -15,6 +15,8 @@ export interface GenerateInput {
   cwd: string;
   llm: LlmClient;
   onProgress?: (msg: string) => void;
+  /** Awaited before each LLM step — lets the caller gate on a token budget. */
+  beforeStep?: (label: string) => void | Promise<void>;
 }
 
 export interface GenerateResult {
@@ -25,16 +27,23 @@ export interface GenerateResult {
 
 export async function generate(input: GenerateInput): Promise<GenerateResult> {
   const log = input.onProgress ?? (() => {});
+  const beforeStep = input.beforeStep ?? (() => {});
+
+  await beforeStep("archetype");
   log("Classifying product…");
   const archetype = await classifyArchetype(input.description, input.llm);
   log(`Archetype: ${archetype}`);
 
+  await beforeStep("meta");
   const meta = await deriveMeta({ description: input.description }, input.llm);
+
+  await beforeStep("plan");
   log(`Planning sections…`);
   const types = await planSections({ description: input.description, archetype }, input.llm);
 
   const sections = [];
   for (const type of types) {
+    await beforeStep(`section:${type}`);
     log(`Writing ${type}…`);
     const props = await fillSection(
       { type, description: input.description, archetype, brand: meta.brand },

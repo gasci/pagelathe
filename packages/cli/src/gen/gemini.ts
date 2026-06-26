@@ -3,6 +3,7 @@ import type { ZodType } from "zod";
 import type { LlmClient, LlmGenerateOptions } from "./llm.js";
 import { LlmError } from "./llm.js";
 import { toGeminiSchema } from "./gemini-schema.js";
+import type { UsageSink } from "./usage.js";
 
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
 
@@ -11,6 +12,7 @@ export interface GeminiOptions {
   model: string;
   baseUrl?: string;
   fetchImpl?: typeof fetch;
+  onUsage?: UsageSink;
 }
 
 interface GeminiContent {
@@ -53,7 +55,21 @@ export function createGeminiClient(opts: GeminiOptions): LlmClient {
     }
     const data = (await res.json()) as {
       candidates?: { content?: { parts?: { text?: string }[] } }[];
+      usageMetadata?: {
+        promptTokenCount?: number;
+        candidatesTokenCount?: number;
+        totalTokenCount?: number;
+      };
     };
+    if (opts.onUsage) {
+      const promptTokens = data.usageMetadata?.promptTokenCount ?? 0;
+      const completionTokens = data.usageMetadata?.candidatesTokenCount ?? 0;
+      opts.onUsage({
+        promptTokens,
+        completionTokens,
+        totalTokens: data.usageMetadata?.totalTokenCount ?? promptTokens + completionTokens,
+      });
+    }
     const parts = data.candidates?.[0]?.content?.parts;
     const text = parts?.map((p) => p.text ?? "").join("");
     if (typeof text !== "string" || text === "") throw new LlmError("Gemini returned no content.");

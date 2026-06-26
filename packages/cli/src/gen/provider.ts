@@ -2,6 +2,7 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import type { ZodType } from "zod";
 import type { LlmClient, LlmGenerateOptions } from "./llm.js";
 import { LlmError } from "./llm.js";
+import type { UsageSink } from "./usage.js";
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const OPENAI_BASE_URL = "https://api.openai.com/v1";
@@ -17,6 +18,7 @@ interface ChatClientConfig {
   baseUrl: string;
   extraHeaders?: Record<string, string>;
   fetchImpl?: typeof fetch;
+  onUsage?: UsageSink;
 }
 
 /**
@@ -54,7 +56,17 @@ function createChatCompletionsClient(config: ChatClientConfig): LlmClient {
     }
     const data = (await res.json()) as {
       choices?: { message?: { content?: string } }[];
+      usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
     };
+    if (config.onUsage) {
+      const promptTokens = data.usage?.prompt_tokens ?? 0;
+      const completionTokens = data.usage?.completion_tokens ?? 0;
+      config.onUsage({
+        promptTokens,
+        completionTokens,
+        totalTokens: data.usage?.total_tokens ?? promptTokens + completionTokens,
+      });
+    }
     const content = data.choices?.[0]?.message?.content;
     if (typeof content !== "string") throw new LlmError("Provider returned no content.");
     return content;
@@ -118,6 +130,7 @@ export interface OpenRouterOptions {
   fetchImpl?: typeof fetch;
   appUrl?: string;
   appName?: string;
+  onUsage?: UsageSink;
 }
 
 export function createOpenRouterClient(opts: OpenRouterOptions): LlmClient {
@@ -130,6 +143,7 @@ export function createOpenRouterClient(opts: OpenRouterOptions): LlmClient {
     baseUrl: opts.baseUrl ?? OPENROUTER_BASE_URL,
     extraHeaders,
     fetchImpl: opts.fetchImpl,
+    onUsage: opts.onUsage,
   });
 }
 
@@ -138,6 +152,7 @@ export interface OpenAIOptions {
   model: string;
   baseUrl?: string;
   fetchImpl?: typeof fetch;
+  onUsage?: UsageSink;
 }
 
 export function createOpenAIClient(opts: OpenAIOptions): LlmClient {
@@ -146,6 +161,7 @@ export function createOpenAIClient(opts: OpenAIOptions): LlmClient {
     model: opts.model,
     baseUrl: opts.baseUrl ?? OPENAI_BASE_URL,
     fetchImpl: opts.fetchImpl,
+    onUsage: opts.onUsage,
   });
 }
 

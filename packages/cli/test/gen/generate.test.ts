@@ -7,6 +7,7 @@ import type { ZodType } from "zod";
 import { generate } from "../../src/gen/generate.js";
 import { getSection, pageDocumentSchema } from "@pagelathe/sections";
 import type { LlmClient, LlmGenerateOptions } from "../../src/gen/llm.js";
+import { BudgetAbortError } from "../../src/gen/usage.js";
 
 const tmps: string[] = [];
 const tmp = () => {
@@ -78,5 +79,24 @@ describe("generate", () => {
     // The pipeline throws before any file write: no document, no vendored sections.
     expect(existsSync(join(cwd, "src", "content", "landing", "index.yaml"))).toBe(false);
     expect(existsSync(join(cwd, "src", "components", "sections"))).toBe(false);
+  });
+
+  it("awaits beforeStep before each LLM step and writes nothing if it aborts", async () => {
+    const cwd = tmp();
+    const labels: string[] = [];
+    await expect(
+      generate({
+        description: "x",
+        cwd,
+        llm: fake(),
+        beforeStep: (label) => {
+          labels.push(label);
+          if (labels.length === 2) throw new BudgetAbortError("budget reached");
+        },
+      }),
+    ).rejects.toBeInstanceOf(BudgetAbortError);
+    expect(labels[0]).toBe("archetype"); // ran before the very first call
+    // aborted mid-pipeline → nothing written
+    expect(existsSync(join(cwd, "src", "content", "landing", "index.yaml"))).toBe(false);
   });
 });

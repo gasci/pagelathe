@@ -74,4 +74,25 @@ describe("createOpenRouterClient", () => {
     ).rejects.toBeInstanceOf(LlmError);
     expect(fetchImpl).toHaveBeenCalledTimes(1); // 4xx not retried despite maxRetries: 2
   });
+
+  it("reports token usage via onUsage", async () => {
+    const seen: unknown[] = [];
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: '{"archetype":"general"}' } }],
+          usage: { prompt_tokens: 100, completion_tokens: 40, total_tokens: 140 },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+    const client = createOpenRouterClient({
+      apiKey: "sk-or-x",
+      model: "x/y",
+      fetchImpl,
+      onUsage: (u) => seen.push(u),
+    });
+    await client.generateObject(schema, { system: "s", prompt: "p" });
+    expect(seen).toEqual([{ promptTokens: 100, completionTokens: 40, totalTokens: 140 }]);
+  });
 });

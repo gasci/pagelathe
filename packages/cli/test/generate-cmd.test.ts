@@ -42,6 +42,14 @@ describe("runGenerate", () => {
     expect(existsSync(res.yamlPath)).toBe(true);
   });
 
+  it("returns token usage and accepts a token budget", async () => {
+    const cwd = tmp();
+    const res = await runGenerate({ cwd, description: "a CLI tool", llm: fake(), maxTokens: 5 });
+    expect(existsSync(res.yamlPath)).toBe(true);
+    // an injected llm reports no usage, so the budget never trips
+    expect(res.usage).toEqual({ promptTokens: 0, completionTokens: 0, totalTokens: 0 });
+  });
+
   it("auto-scaffolds a runnable project when cwd has no package.json (ensureScaffold)", async () => {
     const cwd = tmp();
     const res = await runGenerate({

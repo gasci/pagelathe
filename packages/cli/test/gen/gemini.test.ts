@@ -80,4 +80,25 @@ describe("createGeminiClient", () => {
       expect(String((e as Error).message)).not.toContain("AIza-secret-key-000");
     }
   });
+
+  it("reports token usage from usageMetadata via onUsage", async () => {
+    const seen: unknown[] = [];
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          candidates: [{ content: { parts: [{ text: '{"archetype":"general"}' }] } }],
+          usageMetadata: { promptTokenCount: 200, candidatesTokenCount: 50, totalTokenCount: 250 },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+    const client = createGeminiClient({
+      apiKey: "AIza-x-0000000000",
+      model: "m",
+      fetchImpl,
+      onUsage: (u) => seen.push(u),
+    });
+    await client.generateObject(schema, { system: "s", prompt: "p" });
+    expect(seen).toEqual([{ promptTokens: 200, completionTokens: 50, totalTokens: 250 }]);
+  });
 });
