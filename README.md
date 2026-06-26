@@ -36,12 +36,15 @@ pnpm install && pnpm dev                 # http://localhost:4321
 > generated Astro site (the `pnpm dev` / `pnpm build` steps above).
 
 Prefer the **Gemini API** directly (or OpenAI) instead of OpenRouter? Set that provider's key and
-make it active:
+make it active. `generate` **scaffolds the project for you** when the folder isn't one yet, so no
+separate `init` is needed:
 
 ```bash
+mkdir my-landing && cd my-landing            # a fresh folder for your site
 pagelathe config set-key --provider gemini   # paste your Gemini key (AIza…), or set GEMINI_API_KEY
 pagelathe config use gemini                  # make Gemini your default provider
-pagelathe generate -d "A Postgres branching service for teams"
+pagelathe generate -d "A Postgres branching service for teams"   # scaffolds + fills the project
+pnpm install && pnpm dev                     # http://localhost:4321
 # OpenAI is identical: --provider openai (defaults to gpt-5.5)
 ```
 
