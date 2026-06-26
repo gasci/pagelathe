@@ -5,7 +5,7 @@
 > it and tell you how to reorder sections to convert better.
 
 [![CI](https://github.com/gasci/pagelathe/actions/workflows/ci.yml/badge.svg)](https://github.com/gasci/pagelathe/actions/workflows/ci.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 ## Why pagelathe
 
@@ -80,4 +80,4 @@ For everything else, start with [CONTRIBUTING.md](./CONTRIBUTING.md) and our
 
 ## License
 
-[Apache-2.0](./LICENSE). "pagelathe" is a project trademark — see [TRADEMARK.md](./TRADEMARK.md).
+[MIT](./LICENSE). "pagelathe" is a project trademark — see [TRADEMARK.md](./TRADEMARK.md).
