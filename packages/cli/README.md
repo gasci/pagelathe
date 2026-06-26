@@ -6,7 +6,7 @@
 
 [![npm version](https://img.shields.io/npm/v/pagelathe.svg)](https://www.npmjs.com/package/pagelathe)
 [![CI](https://github.com/gasci/pagelathe/actions/workflows/ci.yml/badge.svg)](https://github.com/gasci/pagelathe/actions/workflows/ci.yml)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/gasci/pagelathe/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/gasci/pagelathe/blob/main/LICENSE)
 [![GitHub Repo stars](https://img.shields.io/github/stars/gasci/pagelathe?style=flat&logo=github&label=Star%20on%20GitHub)](https://github.com/gasci/pagelathe)
 
 Every AI site builder spits out a generic React app. pagelathe is built for **developer
@@ -102,7 +102,7 @@ else. See [SECURITY.md](https://github.com/gasci/pagelathe/blob/main/SECURITY.md
 
 ## Contributing
 
-pagelathe is **free and open source** (Apache-2.0), built in the open at
+pagelathe is **free and open source** (MIT), built in the open at
 **[github.com/gasci/pagelathe](https://github.com/gasci/pagelathe)**. It's early and moving
 fast, so contributions land quickly and genuinely shape where the project goes.
 
@@ -126,5 +126,5 @@ you land your first PR.
 
 ## License
 
-[Apache-2.0](https://github.com/gasci/pagelathe/blob/main/LICENSE). "pagelathe" is a project
+[MIT](https://github.com/gasci/pagelathe/blob/main/LICENSE). "pagelathe" is a project
 trademark — see [TRADEMARK.md](https://github.com/gasci/pagelathe/blob/main/TRADEMARK.md).
