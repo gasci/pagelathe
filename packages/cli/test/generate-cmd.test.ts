@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ZodType } from "zod";
@@ -40,6 +40,35 @@ describe("runGenerate", () => {
     const cwd = tmp();
     const res = await runGenerate({ cwd, description: "a CLI tool", llm: fake() });
     expect(existsSync(res.yamlPath)).toBe(true);
+  });
+
+  it("auto-scaffolds a runnable project when cwd has no package.json (ensureScaffold)", async () => {
+    const cwd = tmp();
+    const res = await runGenerate({
+      cwd,
+      description: "a CLI tool",
+      llm: fake(),
+      ensureScaffold: true,
+    });
+    // generated content
+    expect(existsSync(res.yamlPath)).toBe(true);
+    // scaffolded shell so `pnpm install && pnpm dev` works
+    expect(existsSync(join(cwd, "package.json"))).toBe(true);
+    expect(existsSync(join(cwd, "astro.config.mjs"))).toBe(true);
+  });
+
+  it("does not scaffold when ensureScaffold is unset (programmatic use)", async () => {
+    const cwd = tmp();
+    await runGenerate({ cwd, description: "a CLI tool", llm: fake() });
+    expect(existsSync(join(cwd, "package.json"))).toBe(false);
+  });
+
+  it("leaves an existing project's package.json untouched", async () => {
+    const cwd = tmp();
+    const pkg = join(cwd, "package.json");
+    writeFileSync(pkg, JSON.stringify({ name: "mine", version: "9.9.9" }));
+    await runGenerate({ cwd, description: "a CLI tool", llm: fake(), ensureScaffold: true });
+    expect(JSON.parse(readFileSync(pkg, "utf8")).version).toBe("9.9.9");
   });
   it("requires a description", async () => {
     await expect(runGenerate({ description: "  ", llm: fake() })).rejects.toThrow(/description/i);

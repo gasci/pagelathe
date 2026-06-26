@@ -1,7 +1,11 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import type { Command } from "commander";
 import { getApiKey, envVarFor, providerLabel } from "../config/keys.js";
 import { loadConfig } from "../config/store.js";
 import { assertProvider, type Provider } from "../config/schema.js";
+import { getAppDir } from "../registry/read.js";
+import { copyAppTemplate, finalizeScaffold } from "../fs/scaffold.js";
 import { createLlmClient } from "../gen/factory.js";
 import { generate, type GenerateResult } from "../gen/generate.js";
 import type { LlmClient } from "../gen/llm.js";
@@ -13,12 +17,22 @@ export interface GenerateCmdOptions {
   provider?: Provider;
   model?: string;
   llm?: LlmClient;
+  /** Scaffold a runnable Astro project into `cwd` first if it isn't one yet. */
+  ensureScaffold?: boolean;
   onProgress?: (m: string) => void;
+}
+
+/** A directory is a project if it already has a package.json — don't overwrite it. */
+function isScaffoldedProject(cwd: string): boolean {
+  return existsSync(join(cwd, "package.json"));
 }
 
 export async function runGenerate(opts: GenerateCmdOptions): Promise<GenerateResult> {
   const description = opts.description?.trim();
   if (!description) throw new Error("A product description is required.");
+  const cwd = opts.cwd ?? process.cwd();
+  const log = opts.onProgress ?? (() => {});
+
   let llm = opts.llm;
   if (!llm) {
     const config = loadConfig();
@@ -32,12 +46,16 @@ export async function runGenerate(opts: GenerateCmdOptions): Promise<GenerateRes
     const model = opts.model ?? config.provider.defaultModel[provider];
     llm = createLlmClient({ provider, apiKey: key, model });
   }
-  return generate({
-    description,
-    cwd: opts.cwd ?? process.cwd(),
-    llm,
-    onProgress: opts.onProgress,
-  });
+
+  // Make `generate` self-sufficient: if there's no project here yet, scaffold the
+  // runnable Astro shell so `pnpm install && pnpm dev` works without a prior `init`.
+  if (opts.ensureScaffold && !isScaffoldedProject(cwd)) {
+    log("Scaffolding project…");
+    copyAppTemplate(getAppDir(), cwd);
+    finalizeScaffold(cwd);
+  }
+
+  return generate({ description, cwd, llm, onProgress: opts.onProgress });
 }
 
 export function registerGenerateCommand(program: Command): void {
@@ -59,9 +77,10 @@ export function registerGenerateCommand(program: Command): void {
         description,
         provider,
         model: options.model,
+        ensureScaffold: true,
         onProgress: (m) => console.log(`  ${m}`),
       });
       console.log(`\n✓ Generated ${res.vendored.length} sections → ${res.yamlPath}`);
-      console.log(`  Next: pnpm dev`);
+      console.log(`  Next: pnpm install && pnpm dev`);
     });
 }

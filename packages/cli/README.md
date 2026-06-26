@@ -28,7 +28,7 @@ npm install -g pagelathe
 ```bash
 pagelathe config set-key --provider gemini   # paste your Gemini key (AIza…)
 pagelathe config use gemini                  # make Gemini your default provider
-pagelathe init my-landing && cd my-landing
+mkdir my-landing && cd my-landing            # generate scaffolds the project for you
 pagelathe generate -d "A Postgres branching service for teams"
 pnpm install && pnpm dev                     # http://localhost:4321
 ```
@@ -37,9 +37,11 @@ pnpm install && pnpm dev                     # http://localhost:4321
 > `gemini` for `openai`. See [Providers & API keys](#providers--api-keys) for all three.
 
 `generate` classifies your product, plans the sections, and fills on-brand copy and code — all
-bounded by each section's schema, so output is always valid. Edit the generated
-`src/content/landing/index.yaml` or any `src/components/sections/*` to make it yours. Scaffolded
-projects build standalone — no monorepo required.
+bounded by each section's schema, so output is always valid. In an empty folder it **scaffolds a
+runnable Astro project first** (no separate `pagelathe init` needed); in an existing project it
+just updates the content. Edit the generated `src/content/landing/index.yaml` or any
+`src/components/sections/*` to make it yours. Scaffolded projects build standalone — no monorepo
+required.
 
 ## Commands
 
