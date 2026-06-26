@@ -28,7 +28,7 @@ monorepo required. The **optimize loop** (measure → suggest reorderings) is co
 npm install -g pagelathe
 pagelathe config set-key                 # your OpenRouter key (stored locally)
 pagelathe init my-landing && cd my-landing
-pagelathe generate -d "A Postgres branching service for teams"
+pagelathe generate -d "A TypeScript SDK for sending transactional email"
 pnpm install && pnpm dev                 # http://localhost:4321
 ```
 
@@ -43,7 +43,7 @@ separate `init` is needed:
 mkdir my-landing && cd my-landing            # a fresh folder for your site
 pagelathe config set-key --provider gemini   # paste your Gemini key (AIza…), or set GEMINI_API_KEY
 pagelathe config use gemini                  # make Gemini your default provider
-pagelathe generate -d "A Postgres branching service for teams"   # scaffolds + fills the project
+pagelathe generate -d "A TypeScript SDK for sending transactional email"   # scaffolds + fills the project
 pnpm install && pnpm dev                     # http://localhost:4321
 # OpenAI is identical: --provider openai (defaults to gpt-5.5)
 ```
@@ -62,11 +62,11 @@ Iterate with prompts and commands:
 
 ```bash
 # Re-prompt: regenerate from a sharper description (overwrites index.yaml + section content)
-pagelathe generate -d "…emphasize zero-downtime branching and a generous free tier"
+pagelathe generate -d "A TypeScript SDK for sending transactional email — lead with the 3-line install"
 pagelathe generate                         # run with no -d to be prompted interactively
 
-# Different voice: regenerate with another provider/model
-pagelathe generate --provider gemini -m gemini-2.5-pro -d "…"
+# Different voice: regenerate with another provider (uses that provider's default model)
+pagelathe generate --provider gemini -d "A TypeScript SDK for sending transactional email"
 
 # Add a section component from the registry (run with a bad name to list them all)
 pagelathe add codeDemo
