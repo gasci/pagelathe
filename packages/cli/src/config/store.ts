@@ -1,6 +1,40 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { getConfigDir, getConfigFile } from "./paths.js";
-import { ConfigError, pagelatheConfigSchema, type PagelatheConfig } from "./schema.js";
+import {
+  ConfigError,
+  DEFAULT_MODELS,
+  pagelatheConfigSchema,
+  type PagelatheConfig,
+} from "./schema.js";
+
+/**
+ * Upgrade a legacy v1 config (single `openrouterKey` + string `defaultModel`)
+ * to the v2 multi-provider shape. Unknown/newer shapes pass through untouched
+ * so schema validation can reject them.
+ */
+export function migrateConfig(input: unknown): unknown {
+  if (!input || typeof input !== "object") return input;
+  const obj = input as Record<string, unknown>;
+  if (obj.version !== 1) return input;
+
+  const prov = (obj.provider ?? {}) as Record<string, unknown>;
+  const openrouterKey = typeof prov.openrouterKey === "string" ? prov.openrouterKey : undefined;
+  const openrouterModel =
+    typeof prov.defaultModel === "string" ? prov.defaultModel : DEFAULT_MODELS.openrouter;
+
+  return {
+    version: 2,
+    provider: {
+      active: "openrouter",
+      keys: openrouterKey ? { openrouter: openrouterKey } : {},
+      defaultModel: {
+        openrouter: openrouterModel,
+        gemini: DEFAULT_MODELS.gemini,
+        openai: DEFAULT_MODELS.openai,
+      },
+    },
+  };
+}
 
 export function loadConfig(): PagelatheConfig {
   let raw: string;
@@ -20,7 +54,7 @@ export function loadConfig(): PagelatheConfig {
     throw new ConfigError(`Config file is not valid JSON: ${getConfigFile()}`);
   }
 
-  const result = pagelatheConfigSchema.safeParse(json);
+  const result = pagelatheConfigSchema.safeParse(migrateConfig(json));
   if (!result.success) {
     throw new ConfigError(`Config file failed validation: ${result.error.message}`);
   }
