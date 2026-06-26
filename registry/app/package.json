@@ -1,0 +1,32 @@
+{
+  "name": "@pagelathe/app-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "prebuild": "node ./scripts/vendor-sections.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "clean:sections": "node ./scripts/vendor-sections.mjs --clean"
+  },
+  "dependencies": {
+    "astro": "6.4.8",
+    "@tailwindcss/vite": "4.3.1",
+    "tailwindcss": "4.3.1",
+    "shiki": "^1.29.2",
+    "zod": "^3.24.1"
+  },
+  "comment": "Build-toolchain versions are pinned exactly and vite is overridden to a tested release so a freshly-installed scaffold reproduces a working Astro + Tailwind v4 build (avoids a @tailwindcss/vite <-> vite/rolldown binding mismatch on newer floating versions).",
+  "overrides": {
+    "vite": "7.3.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "7.3.5"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+# pagelathe — Windsurf rules
+
+The authoritative agent guide is AGENTS.md at the repo root; this file mirrors its essentials.
+
+- Package manager: pnpm 9. Runtime: Node >=20.11. Language: TypeScript, ESM (NodeNext).
+- Relative imports use `.js` extensions; type-only imports use `import type`.
+- Practice TDD: failing test first, then minimal implementation. Tests in packages/*/test. Run
+  `pnpm --filter pagelathe test`.
+- Conventional Commits, signed off with `git commit -s` (DCO). Add a changeset for published changes.
+- Never commit or transmit API keys; the OpenRouter key is local-only and sent only to OpenRouter.
+- Run `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build` before a PR.

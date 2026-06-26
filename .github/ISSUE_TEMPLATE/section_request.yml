@@ -1,0 +1,36 @@
+name: Section request
+description: Propose a new landing-page section for the registry.
+labels: ["section-request", "triage"]
+body:
+  - type: input
+    id: section-name
+    attributes:
+      label: Section name
+      placeholder: "e.g. Comparison table"
+    validations:
+      required: true
+  - type: dropdown
+    id: archetype
+    attributes:
+      label: Best fit archetype
+      options:
+        - sdk-infra
+        - technical-app
+        - general
+        - all
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: What is it for?
+      description: What conversion job does this section do? Link 1–2 real examples.
+    validations:
+      required: true
+  - type: textarea
+    id: props
+    attributes:
+      label: Proposed props / fields
+      description: What configurable fields should it expose?
+    validations:
+      required: false

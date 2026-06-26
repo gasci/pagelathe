@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.astro/
+*.log
+.DS_Store
+coverage/
+# secrets / local config — never commit
+.env
+.env.*
+.pagelathe/
+.superpowers/
+*.local
+# app engine build-vendored section copies (keep the .gitkeep)
+registry/app/src/components/sections/*.astro
+
+# npm pack output
+*.tgz
+
+# Local design docs (superpowers specs/plans): kept on disk, untracked
+docs/superpowers/

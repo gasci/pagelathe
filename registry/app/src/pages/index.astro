@@ -1,0 +1,13 @@
+---
+import { getEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+import SectionRenderer from "../components/SectionRenderer.astro";
+
+const page = await getEntry("landing", "index");
+if (!page) throw new Error("Missing src/content/landing/index.yaml");
+const { meta, sections } = page.data;
+---
+
+<Base title={meta.title} description={meta.description} locale={meta.locales[0]}>
+  {sections.map((s) => <SectionRenderer type={s.type} props={s.props} />)}
+</Base>

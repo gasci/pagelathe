@@ -1,0 +1,19 @@
+---
+description: pagelathe project conventions for AI agents
+globs:
+alwaysApply: true
+---
+
+The authoritative agent guide is `AGENTS.md` at the repo root — follow it.
+
+Key rules:
+- pnpm 9, Node >=20.11, TypeScript ESM with NodeNext: relative imports use `.js` extensions;
+  type-only imports use `import type` (verbatimModuleSyntax is on).
+- TDD: write the failing test first (tests in `packages/*/test/`), then implement. Run
+  `pnpm --filter pagelathe test`.
+- Conventional Commits + DCO sign-off: `git commit -s`. Add a changeset (`pnpm changeset`) for
+  changes to published behavior.
+- Never commit, log, or transmit the user's OpenRouter API key anywhere but OpenRouter. `.env*`
+  and `.pagelathe/` are git-ignored.
+- Keep files small and single-responsibility; match existing patterns. Before a PR:
+  `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build`.

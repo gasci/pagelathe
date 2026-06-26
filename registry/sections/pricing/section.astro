@@ -1,0 +1,29 @@
+---
+import type { z } from "zod";
+import type { propsSchema } from "./schema.js";
+
+type Props = z.infer<typeof propsSchema>;
+const { heading, subhead, tiers } = Astro.props as Props;
+---
+
+<section id="pricing" class="mx-auto max-w-6xl px-6 py-24" data-section="pricing">
+  <div class="mx-auto max-w-2xl text-center">
+    <h2 class="text-3xl font-bold tracking-tight text-white">{heading}</h2>
+    {subhead && <p class="mt-3 text-white/60">{subhead}</p>}
+  </div>
+  <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {tiers.map((t) => (
+      <div class={`flex flex-col rounded-[var(--radius)] border p-7 ${t.featured ? "border-[var(--color-primary)] bg-white/[0.03]" : "border-white/10"}`}>
+        <h3 class="text-sm font-semibold text-white/80">{t.name}</h3>
+        <p class="mt-3"><span class="text-3xl font-bold text-white">{t.price}</span>{t.period && <span class="text-white/50">{t.period}</span>}</p>
+        <p class="mt-2 text-sm text-white/60">{t.description}</p>
+        <ul class="mt-5 flex-1 space-y-2">
+          {t.features.map((f) => <li class="text-sm text-white/70">✓ {f}</li>)}
+        </ul>
+        <a href={t.cta.href} class={`mt-6 rounded-[var(--radius)] px-4 py-2.5 text-center text-sm font-semibold ${t.featured ? "bg-[var(--color-primary)] text-white hover:opacity-90" : "border border-white/15 text-white hover:bg-white/5"}`}>
+          {t.cta.label}
+        </a>
+      </div>
+    ))}
+  </div>
+</section>

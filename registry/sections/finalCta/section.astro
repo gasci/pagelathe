@@ -1,0 +1,18 @@
+---
+import type { z } from "zod";
+import type { propsSchema } from "./schema.js";
+
+type Props = z.infer<typeof propsSchema>;
+const { headline, subhead, cta, microcopy } = Astro.props as Props;
+---
+
+<section class="mx-auto max-w-4xl px-6 py-28 text-center" data-section="finalCta">
+  <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">{headline}</h2>
+  {subhead && <p class="mt-4 text-lg text-white/60">{subhead}</p>}
+  <div class="mt-8">
+    <a href={cta.href} class="inline-flex rounded-[var(--radius)] bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-white hover:opacity-90">
+      {cta.label}
+    </a>
+  </div>
+  {microcopy && <p class="mt-4 text-xs text-white/40">{microcopy}</p>}
+</section>

@@ -1,0 +1,28 @@
+---
+import type { z } from "zod";
+import type { propsSchema } from "./schema.js";
+
+type Props = z.infer<typeof propsSchema>;
+const { brand, links, github, cta } = Astro.props as Props;
+---
+
+<header class="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur" data-section="header">
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4" aria-label="Primary">
+    <a href="/" class="text-sm font-bold text-white">{brand}</a>
+    <div class="flex items-center gap-6">
+      {links.map((l) => (
+        <a href={l.href} class="hidden text-sm text-white/70 hover:text-white sm:inline">{l.label}</a>
+      ))}
+      {github && (
+        <a href={github.href} class="text-sm text-white/70 hover:text-white" aria-label="Star on GitHub">
+          ★ {github.stars ?? "GitHub"}
+        </a>
+      )}
+      {cta && (
+        <a href={cta.href} class="rounded-[var(--radius)] bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+          {cta.label}
+        </a>
+      )}
+    </div>
+  </nav>
+</header>

@@ -1,0 +1,55 @@
+name: Publish
+
+# Tokenless publish to npm via Trusted Publishing (OIDC). No NPM_TOKEN secret:
+# npm verifies the publish came from THIS repo's workflow via a short-lived
+# OIDC token. Configure the trusted publisher on npm (Package settings ->
+# Trusted Publisher): org `gasci`, repo `pagelathe`, workflow `release.yml`,
+# allowed action `npm publish`. Trigger manually after versioning.
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write # required for OIDC trusted publishing
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # >= 22.14.0 required by trusted publishing
+
+      # Trusted publishing requires npm CLI >= 11.5.1 (newer than Node 22 ships).
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build CLI and bundle the registry into dist
+        run: |
+          pnpm --filter pagelathe build
+          node packages/cli/scripts/bundle-registry.mjs
+
+      # @pagelathe/sections is bundled into dist; drop the workspace devDep and
+      # the prepack hook so the published manifest is clean and npm does not
+      # rebuild during publish.
+      - name: Clean the publish manifest
+        run: |
+          cd packages/cli
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));if(p.devDependencies)delete p.devDependencies['@pagelathe/sections'];if(p.scripts)delete p.scripts.prepack;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+
+      - name: Publish (OIDC, tokenless)
+        # No --provenance flag: with Trusted Publishing the OIDC token both
+        # authenticates the publish AND attests provenance automatically (this is a
+        # public repo). Passing --provenance forces npm's legacy token-auth path,
+        # which has no token here and fails with ENEEDAUTH. Requires a matching
+        # trusted-publisher entry on npm (gasci/pagelathe · release.yml).
+        run: npm publish --access public
+        working-directory: packages/cli

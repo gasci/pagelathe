@@ -1,0 +1,135 @@
+meta:
+  title: "Branchy — Postgres branching for teams"
+  description: "Spin up an isolated database branch per pull request in one command."
+  locales: ["en"]
+  primaryGoal: signup
+theme:
+  tokens:
+    colorPrimary: "#3A6463"
+    radius: "0.5rem"
+    font: "Inter"
+archetype: sdk-infra
+sections:
+  - type: header
+    id: header-1
+    props:
+      brand: "Branchy"
+      links:
+        - label: "Docs"
+          href: "/docs"
+        - label: "Pricing"
+          href: "#pricing"
+      github:
+        href: "https://github.com"
+        stars: "4.2k"
+      cta:
+        label: "Start free"
+        href: "#get-started"
+
+  - type: hero
+    id: hero-1
+    props:
+      variant: code-snippet
+      eyebrow: "Open source"
+      headline: "Postgres branching for teams"
+      subhead: "Spin up an isolated database branch per pull request in one command."
+      ctas:
+        - label: "Start free"
+          href: "#get-started"
+          style: primary
+        - label: "View on GitHub"
+          href: "https://github.com"
+          style: secondary
+      code:
+        lang: bash
+        source: "npx branchy create --from main\n# → branch ready in 1.2s"
+
+  - type: features
+    id: features-1
+    props:
+      heading: "Built for teams that ship"
+      subhead: "Isolated environments, instant reset, zero config."
+      items:
+        - title: "Branch per PR"
+          body: "Every pull request gets an isolated database."
+          emphasis: true
+        - title: "1-second reset"
+          body: "Roll back to a clean state instantly."
+          emphasis: false
+        - title: "Self-host or cloud"
+          body: "Run it your way; data stays yours."
+          emphasis: false
+
+  - type: codeDemo
+    id: codeDemo-1
+    props:
+      heading: "Drop it into your stack"
+      subhead: "Same API across languages."
+      snippets:
+        - lang: python
+          label: "Python"
+          source: "from branchy import Client\nc = Client()\nc.create(\"feat-x\")"
+        - lang: javascript
+          label: "Node"
+          source: "import { Client } from 'branchy'\nawait new Client().create('feat-x')"
+        - lang: go
+          label: "Go"
+          source: "client := branchy.New()\nclient.Create(\"feat-x\")"
+
+  - type: pricing
+    id: pricing-1
+    props:
+      heading: "Honest pricing"
+      subhead: "Start free. No credit card."
+      tiers:
+        - name: "Open source"
+          price: "$0"
+          description: "Self-host, unlimited branches."
+          features:
+            - "Self-hosted"
+            - "Community support"
+            - "Apache-2.0"
+          cta:
+            label: "Get started"
+            href: "#get-started"
+          featured: false
+        - name: "Team"
+          price: "$29"
+          period: "/mo"
+          description: "Managed cloud for small teams."
+          features:
+            - "10 projects"
+            - "Daily backups"
+            - "Email support"
+          cta:
+            label: "Start trial"
+            href: "#trial"
+          featured: true
+
+  - type: finalCta
+    id: finalCta-1
+    props:
+      headline: "Ship your first branch today"
+      subhead: "Free and open source. Self-host in minutes."
+      cta:
+        label: "Start free"
+        href: "#get-started"
+      microcopy: "No credit card · Apache-2.0"
+
+  - type: footer
+    id: footer-1
+    props:
+      brand: "Branchy"
+      tagline: "Database branching for teams."
+      columns:
+        - heading: "Product"
+          links:
+            - label: "Docs"
+              href: "/docs"
+            - label: "Pricing"
+              href: "#pricing"
+        - heading: "Community"
+          links:
+            - label: "GitHub"
+              href: "https://github.com"
+      copyright: "© 2026 Branchy. Apache-2.0."

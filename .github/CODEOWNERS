@@ -1,0 +1,6 @@
+# Default owners for everything in the repo
+*                       @gasci
+
+/packages/cli/          @gasci
+/.github/               @gasci
+/docs/                  @gasci

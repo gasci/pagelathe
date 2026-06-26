@@ -1,0 +1,23 @@
+---
+interface Props {
+  type: string;
+  props: Record<string, unknown>;
+}
+const { type, props } = Astro.props;
+
+const modules = import.meta.glob("./sections/*.astro", { eager: true }) as Record<
+  string,
+  { default: unknown }
+>;
+const entry = modules[`./sections/${type}.astro`];
+const Component = entry?.default as
+  | ((props: Record<string, unknown>) => unknown)
+  | undefined;
+if (!Component) {
+  console.warn(
+    `[pagelathe] unknown section type "${type}" — no component at ./sections/${type}.astro`,
+  );
+}
+---
+
+{Component ? <Component {...props} /> : null}

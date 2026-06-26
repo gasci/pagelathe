@@ -1,0 +1,57 @@
+{
+  "name": "pagelathe",
+  "version": "0.1.1",
+  "description": "AI landing-page builder for technical founders — bring your key, ship a fast static Astro page in minutes.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "author": "Göktuğ Aşcı",
+  "homepage": "https://github.com/gasci/pagelathe#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gasci/pagelathe.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/gasci/pagelathe/issues"
+  },
+  "keywords": [
+    "landing-page",
+    "astro",
+    "tailwindcss",
+    "ai",
+    "openrouter",
+    "static-site",
+    "cli",
+    "developer-tools",
+    "generator"
+  ],
+  "bin": {
+    "pagelathe": "./dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepack": "tsup && node scripts/bundle-registry.mjs"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "commander": "^12.1.0",
+    "yaml": "^2.6.0",
+    "zod": "^3.24.1",
+    "zod-to-json-schema": "^3.24.1"
+  },
+  "devDependencies": {
+    "@pagelathe/sections": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
+  }
+}
