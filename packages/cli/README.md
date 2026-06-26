@@ -29,7 +29,7 @@ npm install -g pagelathe
 pagelathe config set-key --provider gemini   # paste your Gemini key (AIza…)
 pagelathe config use gemini                  # make Gemini your default provider
 mkdir my-landing && cd my-landing            # generate scaffolds the project for you
-pagelathe generate -d "A Postgres branching service for teams"
+pagelathe generate -d "A TypeScript SDK for sending transactional email"
 pnpm install && pnpm dev                     # http://localhost:4321
 ```
 
@@ -42,6 +42,41 @@ runnable Astro project first** (no separate `pagelathe init` needed); in an exis
 just updates the content. Edit the generated `src/content/landing/index.yaml` or any
 `src/components/sections/*` to make it yours. Scaffolded projects build standalone — no monorepo
 required.
+
+## Example prompts
+
+`generate` is tuned for **developer tools** — SDKs, CLIs, APIs, and dev platforms. Not sure how to
+phrase yours? Borrow one of these and make it specific:
+
+```bash
+pagelathe generate -d "A TypeScript SDK for sending transactional email"
+pagelathe generate -d "A CLI that turns OpenAPI specs into typed API clients"
+pagelathe generate -d "An open-source feature-flag service for React and Node"
+pagelathe generate -d "A self-hostable error-tracking platform for backend teams"
+pagelathe generate -d "An edge-deployed image-optimization API with a generous free tier"
+```
+
+The more concrete the description — who it's for, the one job it does, what's free — the sharper
+the generated copy and code samples.
+
+## What you get
+
+`generate` writes a standalone Astro project you fully own — no monorepo, no lock-in:
+
+```text
+my-landing/
+├─ src/
+│  ├─ content/landing/index.yaml      # copy, section order, which sections appear
+│  └─ components/sections/*.astro     # the section components — yours to edit
+├─ astro.config.mjs
+└─ package.json
+```
+
+```bash
+pnpm install
+pnpm dev      # live preview at http://localhost:4321
+pnpm build    # static site → dist/  (deploy to Vercel, Netlify, GitHub Pages, S3 — anywhere)
+```
 
 ## Commands
 
@@ -61,6 +96,11 @@ required.
 - `-d, --description <text>` — product description (skips the interactive prompt)
 - `-p, --provider <name>` — `openrouter` (default), `gemini`, or `openai` — overrides the active provider for this run
 - `-m, --model <id>` — model id (defaults to the active provider's configured model)
+- `--max-tokens <n>` — pause and ask before a run exceeds this many tokens (default `100000`; `0` disables). Non-interactive runs stop safely at the cap and write nothing.
+
+> 💸 Every `generate` run prints a **live token count** while it works and a final **prompt /
+> completion / total** summary, so you always know what it cost — and `--max-tokens` keeps a
+> runaway run in check.
 
 Run any command with `--help` for full usage.
 
@@ -70,11 +110,11 @@ Iterate with prompts and commands after the first `generate`:
 
 ```bash
 # Re-prompt: regenerate from a sharper description (overwrites index.yaml + section content)
-pagelathe generate -d "…emphasize zero-downtime branching and a generous free tier"
+pagelathe generate -d "A TypeScript SDK for sending transactional email — lead with the 3-line install"
 pagelathe generate                         # run with no -d to be prompted interactively
 
-# Different voice: regenerate with another provider/model
-pagelathe generate --provider gemini -m gemini-2.5-pro -d "…"
+# Different voice: regenerate with another provider (uses that provider's default model)
+pagelathe generate --provider gemini -d "A TypeScript SDK for sending transactional email"
 
 # Add a section component from the registry (run with a bad name to list them all)
 pagelathe add codeDemo
@@ -104,10 +144,10 @@ whichever you have a key for:
 # Use Gemini directly with your Google AI Studio key
 pagelathe config set-key --provider gemini   # paste AIza…  (or export GEMINI_API_KEY)
 pagelathe config use gemini                  # make Gemini the active provider
-pagelathe generate -d "A Postgres branching service for teams"
+pagelathe generate -d "A TypeScript SDK for sending transactional email"
 
 # …or override per run without changing your default
-pagelathe generate --provider openai -m gpt-5.5 -d "A Postgres branching service for teams"
+pagelathe generate --provider openai -m gpt-5.5 -d "A TypeScript SDK for sending transactional email"
 ```
 
 Default models are `anthropic/claude-3.7-sonnet` (OpenRouter), `gemini-3.5-flash` (Gemini), and
