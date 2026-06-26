@@ -1,16 +1,18 @@
 import { z } from "zod";
 import type { SectionManifest } from "../src/manifest.js";
 
+// Footer text is kept short on purpose: long taglines/labels look unbalanced and
+// wrap awkwardly, so each field is bounded to a tight max length.
 export const footerColumnSchema = z.object({
-  heading: z.string().min(1),
-  links: z.array(z.object({ label: z.string().min(1), href: z.string().min(1) })).min(1),
+  heading: z.string().min(1).max(24),
+  links: z.array(z.object({ label: z.string().min(1).max(24), href: z.string().min(1) })).min(1),
 });
 
 export const propsSchema = z.object({
-  brand: z.string().min(1),
-  tagline: z.string().optional(),
+  brand: z.string().min(1).max(40),
+  tagline: z.string().max(80).optional(),
   columns: z.array(footerColumnSchema).max(4).default([]),
-  copyright: z.string().min(1),
+  copyright: z.string().min(1).max(80),
 });
 
 export const entrySchema = z.object({
