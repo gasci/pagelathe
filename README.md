@@ -56,6 +56,31 @@ Each provider key is stored only on your machine and sent only to that provider'
 (OpenRouter, Google, or OpenAI) — never logged or sent anywhere else. See
 [SECURITY.md](./SECURITY.md).
 
+## Tweak your page
+
+Iterate with prompts and commands:
+
+```bash
+# Re-prompt: regenerate from a sharper description (overwrites index.yaml + section content)
+pagelathe generate -d "…emphasize zero-downtime branching and a generous free tier"
+pagelathe generate                         # run with no -d to be prompted interactively
+
+# Different voice: regenerate with another provider/model
+pagelathe generate --provider gemini -m gemini-2.5-pro -d "…"
+
+# Add a section component from the registry (run with a bad name to list them all)
+pagelathe add codeDemo
+```
+
+For surgical, prompt-free edits, change the generated files directly — output stays valid because
+every section is schema-bounded:
+
+- `src/content/landing/index.yaml` — copy, section order, and which sections appear
+- `src/components/sections/*.astro` — markup and styling
+
+> ⚠️ Re-running `generate` regenerates the **whole** page and overwrites `index.yaml`, so commit
+> any hand-edits you want to keep first.
+
 ## Repository tour
 
 Most of the repository root is standard OSS governance — you only need a few places to get
