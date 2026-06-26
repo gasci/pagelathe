@@ -2,12 +2,14 @@ import type { Provider } from "../config/schema.js";
 import type { LlmClient } from "./llm.js";
 import { createOpenAIClient, createOpenRouterClient } from "./provider.js";
 import { createGeminiClient } from "./gemini.js";
+import type { UsageSink } from "./usage.js";
 
 export interface CreateLlmClientOptions {
   provider: Provider;
   apiKey: string;
   model: string;
   fetchImpl?: typeof fetch;
+  onUsage?: UsageSink;
 }
 
 /** Build the LlmClient for the chosen provider. */
@@ -19,18 +21,21 @@ export function createLlmClient(opts: CreateLlmClientOptions): LlmClient {
         model: opts.model,
         appName: "pagelathe",
         fetchImpl: opts.fetchImpl,
+        onUsage: opts.onUsage,
       });
     case "openai":
       return createOpenAIClient({
         apiKey: opts.apiKey,
         model: opts.model,
         fetchImpl: opts.fetchImpl,
+        onUsage: opts.onUsage,
       });
     case "gemini":
       return createGeminiClient({
         apiKey: opts.apiKey,
         model: opts.model,
         fetchImpl: opts.fetchImpl,
+        onUsage: opts.onUsage,
       });
   }
 }
