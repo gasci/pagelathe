@@ -1,6 +1,6 @@
 {
   "name": "pagelathe",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "AI landing-page builder for technical founders — bring your key, ship a fast static Astro page in minutes.",
   "license": "MIT",
   "type": "module",
