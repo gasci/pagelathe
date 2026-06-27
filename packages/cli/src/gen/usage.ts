@@ -1,3 +1,5 @@
+import { promptConfirm } from "../ui/prompts.js";
+
 /** Token usage reported by a provider for a single LLM call. */
 export interface TokenUsage {
   promptTokens: number;
@@ -45,6 +47,14 @@ export class TokenMeter {
 }
 
 export type BudgetConfirm = (used: number, budget: number) => boolean | Promise<boolean>;
+
+/** TTY: ask; non-TTY (CI/piped): fail safe = decline, so automation can't overspend. */
+export function defaultBudgetConfirm(used: number, budget: number): Promise<boolean> {
+  if (!process.stdout.isTTY) return Promise.resolve(false);
+  return promptConfirm(
+    `Used ${used.toLocaleString()} tokens (budget ${budget.toLocaleString()}). Continue?`,
+  );
+}
 
 /**
  * Build a `beforeStep` guard: once the meter crosses `maxTokens`, it asks

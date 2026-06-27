@@ -1,35 +1,52 @@
 import { join, resolve } from "node:path";
 import type { Command } from "commander";
-import { stringify as yamlStringify } from "yaml";
-import { getSection, pageDocumentSchema } from "@pagelathe/sections";
+import { pageDocumentSchema } from "@pagelathe/sections";
+import { getApiKey, envVarFor, providerLabel } from "../config/keys.js";
+import { loadConfig } from "../config/store.js";
+import { assertProvider, type Provider } from "../config/schema.js";
 import { readDocumentYaml, writeDocumentYaml } from "../gen/yaml-doc.js";
-import { parsePath, coerceValue, applySet, getAtPath, listLeafPaths } from "../gen/set-path.js";
+import { createLlmClient } from "../gen/factory.js";
+import type { LlmClient } from "../gen/llm.js";
+import { editSection } from "../gen/edit-section.js";
+import { diffLeaves, type LeafChange } from "../gen/set-path.js";
+import {
+  TokenMeter,
+  makeBudgetGuard,
+  BudgetAbortError,
+  defaultBudgetConfirm,
+  type BudgetConfirm,
+  type TokenUsage,
+} from "../gen/usage.js";
+import { promptText } from "../ui/prompts.js";
+import { DEFAULT_MAX_TOKENS } from "./generate-cmd.js";
 
-export interface SetOp {
-  path: string;
-  value: string;
+export interface EditOptions {
+  cwd?: string;
+  sectionId: string;
+  /** Natural-language edit instruction. */
+  instruction: string;
+  provider?: Provider;
+  model?: string;
+  /** Injectable for tests; otherwise built from provider config. */
+  llm?: LlmClient;
+  maxTokens?: number;
+  confirm?: BudgetConfirm;
+  onProgress?: (m: string) => void;
 }
-export interface EditChange {
-  path: string;
-  from: unknown;
-  to: unknown;
-}
+
 export interface EditResult {
   yamlPath: string;
   sectionId: string;
   props: unknown;
-  changes: EditChange[];
-  editablePaths: string[];
-  written: boolean;
-}
-export interface EditOptions {
-  cwd?: string;
-  sectionId: string;
-  sets?: SetOp[];
+  changes: LeafChange[];
+  usage: TokenUsage;
 }
 
 export async function runEdit(opts: EditOptions): Promise<EditResult> {
+  const instruction = opts.instruction?.trim();
+  if (!instruction) throw new Error("An edit instruction is required.");
   const cwd = resolve(opts.cwd ?? process.cwd());
+  const log = opts.onProgress ?? (() => {});
   const yamlPath = join(cwd, "src", "content", "landing", "index.yaml");
   const doc = readDocumentYaml(yamlPath);
 
@@ -38,84 +55,109 @@ export async function runEdit(opts: EditOptions): Promise<EditResult> {
     const ids = doc.sections.map((s) => s.id).join(", ") || "(none)";
     throw new Error(`No section with id "${opts.sectionId}". Available ids: ${ids}`);
   }
-  const entry = getSection(section.type);
-  if (!entry) throw new Error(`Unknown section type "${section.type}".`);
-  const schema = entry.propsSchema;
-  const editablePaths = listLeafPaths(section.props);
 
-  const sets = opts.sets ?? [];
-  if (sets.length === 0) {
-    return {
-      yamlPath,
-      sectionId: section.id,
-      props: section.props,
-      changes: [],
-      editablePaths,
-      written: false,
-    };
-  }
+  const maxTokens = opts.maxTokens ?? DEFAULT_MAX_TOKENS;
+  const meter = new TokenMeter();
+  meter.onRecord = (_u, agg) => log(`↳ ${agg.totalTokens.toLocaleString()} tokens used so far`);
+  const beforeStep = makeBudgetGuard(meter, maxTokens, opts.confirm ?? defaultBudgetConfirm);
 
-  let working = section.props;
-  const changes: EditChange[] = [];
-  for (const { path: pathStr, value } of sets) {
-    const path = parsePath(pathStr);
-    let coerced: unknown;
-    try {
-      coerced = coerceValue(schema, path, value);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      throw new Error(`${msg}\nEditable fields: ${editablePaths.join(", ")}`);
+  let llm = opts.llm;
+  if (!llm) {
+    const config = loadConfig();
+    const provider = opts.provider ?? config.provider.active;
+    const key = getApiKey(provider);
+    if (!key) {
+      throw new Error(
+        `No ${providerLabel(provider)} key found. Run \`pagelathe config set-key --provider ${provider}\` or set ${envVarFor(provider)}.`,
+      );
     }
-    const from = getAtPath(working, path);
-    working = applySet(working, path, coerced);
-    changes.push({ path: pathStr, from, to: coerced });
+    const model = opts.model ?? config.provider.defaultModel[provider];
+    llm = createLlmClient({ provider, apiKey: key, model, onUsage: (u) => meter.record(u) });
   }
 
-  // Keystone: re-validate the section, then the whole document, BEFORE writing.
-  const validated = schema.parse(working);
-  section.props = validated;
+  const before = section.props;
+  await beforeStep();
+  log(`Revising ${section.id}…`);
+  const newProps = await editSection(
+    {
+      type: section.type,
+      currentProps: before,
+      instruction,
+      archetype: doc.archetype,
+      product: doc.meta.title,
+    },
+    llm,
+  );
+
+  const changes = diffLeaves(before, newProps);
+  section.props = newProps;
+  // Keystone: validate the whole document BEFORE writing (preserves last-good).
   pageDocumentSchema.parse(doc);
   writeDocumentYaml(doc, yamlPath);
 
-  return {
-    yamlPath,
-    sectionId: section.id,
-    props: validated,
-    changes,
-    editablePaths,
-    written: true,
-  };
-}
-
-function collectSet(raw: string, acc: SetOp[]): SetOp[] {
-  const i = raw.indexOf("=");
-  if (i < 0) throw new Error(`--set expects path=value, got "${raw}".`);
-  acc.push({ path: raw.slice(0, i), value: raw.slice(i + 1) });
-  return acc;
+  return { yamlPath, sectionId: section.id, props: newProps, changes, usage: meter.usage };
 }
 
 export function registerEditCommand(program: Command): void {
   program
     .command("edit <sectionId>")
-    .description("edit fields of one section in index.yaml (no LLM, schema-validated)")
+    .description("revise one section from a prompt (LLM, schema-bounded)")
+    .option("-i, --instruction <text>", "what to change (skips the prompt)")
     .option(
-      "--set <path=value>",
-      "set a field; repeatable (e.g. --set ctas.0.label=Star)",
-      collectSet,
-      [],
+      "-p, --provider <provider>",
+      "provider to use (defaults to active: openrouter/gemini/openai)",
+    )
+    .option("-m, --model <id>", "model id (defaults to the active provider's config)")
+    .option(
+      "--max-tokens <n>",
+      `pause and confirm once this many tokens are used; 0 disables (default ${DEFAULT_MAX_TOKENS})`,
     )
     .option("--cwd <dir>", "project directory (defaults to the working directory)")
-    .action(async (sectionId: string, options: { set: SetOp[]; cwd?: string }) => {
-      const res = await runEdit({ cwd: options.cwd, sectionId, sets: options.set });
-      if (!res.written) {
-        console.log(`${res.sectionId}:\n${yamlStringify(res.props)}`);
-        console.log(`Editable fields:\n  ${res.editablePaths.join("\n  ")}`);
-        console.log(`\nEdit one with:  pagelathe edit ${res.sectionId} --set <field>=<value>`);
-        return;
-      }
-      console.log(`✓ Edited ${res.sectionId} → ${res.yamlPath}`);
-      for (const c of res.changes) {
-        console.log(`  ${c.path}: ${JSON.stringify(c.from)} → ${JSON.stringify(c.to)}`);
-      }
-    });
+    .action(
+      async (
+        sectionId: string,
+        options: {
+          instruction?: string;
+          provider?: string;
+          model?: string;
+          maxTokens?: string;
+          cwd?: string;
+        },
+      ) => {
+        const provider = options.provider ? assertProvider(options.provider) : undefined;
+        const maxTokens = options.maxTokens !== undefined ? Number(options.maxTokens) : undefined;
+        if (maxTokens !== undefined && Number.isNaN(maxTokens)) {
+          throw new Error("--max-tokens must be a number.");
+        }
+        const instruction =
+          options.instruction ?? (await promptText(`What should I change in "${sectionId}"?`));
+        try {
+          const res = await runEdit({
+            cwd: options.cwd,
+            sectionId,
+            instruction,
+            provider,
+            model: options.model,
+            maxTokens,
+            onProgress: (m) => console.log(`  ${m}`),
+          });
+          console.log(`\n✓ Revised ${res.sectionId} → ${res.yamlPath}`);
+          if (res.changes.length === 0) console.log("  (no fields changed)");
+          for (const c of res.changes) {
+            console.log(`  ${c.path}: ${JSON.stringify(c.from)} → ${JSON.stringify(c.to)}`);
+          }
+          if (res.usage.totalTokens > 0) {
+            console.log(
+              `  ${res.usage.totalTokens.toLocaleString()} tokens used (prompt ${res.usage.promptTokens.toLocaleString()} / completion ${res.usage.completionTokens.toLocaleString()})`,
+            );
+          }
+        } catch (err) {
+          if (err instanceof BudgetAbortError) {
+            console.log(`\n⚠ ${err.message}`);
+            return;
+          }
+          throw err;
+        }
+      },
+    );
 }

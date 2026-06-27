@@ -13,10 +13,11 @@ import {
   TokenMeter,
   makeBudgetGuard,
   BudgetAbortError,
+  defaultBudgetConfirm,
   type BudgetConfirm,
   type TokenUsage,
 } from "../gen/usage.js";
-import { promptText, promptConfirm } from "../ui/prompts.js";
+import { promptText } from "../ui/prompts.js";
 
 /** Default token budget before `generate` pauses to confirm (safety net). */
 export const DEFAULT_MAX_TOKENS = 100_000;
@@ -43,14 +44,6 @@ export interface GenerateCmdResult extends GenerateResult {
 /** A directory is a project if it already has a package.json — don't overwrite it. */
 function isScaffoldedProject(cwd: string): boolean {
   return existsSync(join(cwd, "package.json"));
-}
-
-/** TTY: ask; non-TTY (CI/piped): fail safe = decline, so automation can't overspend. */
-function defaultBudgetConfirm(used: number, budget: number): Promise<boolean> {
-  if (!process.stdout.isTTY) return Promise.resolve(false);
-  return promptConfirm(
-    `Used ${used.toLocaleString()} tokens (budget ${budget.toLocaleString()}). Continue generating?`,
-  );
 }
 
 export async function runGenerate(opts: GenerateCmdOptions): Promise<GenerateCmdResult> {

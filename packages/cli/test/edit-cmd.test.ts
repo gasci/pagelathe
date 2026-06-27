@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { ZodType } from "zod";
 import { getSection } from "@pagelathe/sections";
 import { writeDocumentYaml, readDocumentYaml } from "../src/gen/yaml-doc.js";
 import { runEdit } from "../src/commands/edit-cmd.js";
+import type { LlmClient } from "../src/gen/llm.js";
 
 const tmps: string[] = [];
 const tmp = () => {
@@ -19,7 +21,12 @@ afterEach(() => {
 function project(): string {
   const cwd = tmp();
   const doc = {
-    meta: { title: "B — x", description: "d", locales: ["en"], primaryGoal: "signup" },
+    meta: {
+      title: "Branchy — branching",
+      description: "d",
+      locales: ["en"],
+      primaryGoal: "signup",
+    },
     theme: { tokens: {} },
     archetype: "general",
     sections: [
@@ -31,67 +38,67 @@ function project(): string {
   return cwd;
 }
 
+/** Fake LLM that returns the hero props with one changed headline. */
+function fakeHero(headline = "Branch your DB per PR"): LlmClient {
+  return {
+    generateObject: <T>(schema: ZodType<T>) => {
+      const current = getSection("hero")!.manifest.defaultProps as object;
+      return Promise.resolve(schema.parse({ ...current, headline }));
+    },
+  };
+}
+
 describe("runEdit", () => {
-  it("sets a scalar and a nested array field, leaving other sections intact", async () => {
+  it("revises a section from a prompt, reports the diff, leaves others intact", async () => {
     const cwd = project();
     const yamlFile = join(cwd, "src/content/landing/index.yaml");
     const featuresBefore = readDocumentYaml(yamlFile).sections.find(
       (s) => s.id === "features-1",
     )!.props;
+
     const res = await runEdit({
       cwd,
       sectionId: "hero-1",
-      sets: [
-        { path: "headline", value: "Branch your DB" },
-        { path: "ctas.0.label", value: "Get started" },
-        { path: "variant", value: "product-ui" },
-      ],
+      instruction: "make the headline punchier",
+      llm: fakeHero("Branch your DB per PR"),
     });
-    expect(res.written).toBe(true);
+
+    expect(res.changes).toContainEqual({
+      path: "headline",
+      from: (getSection("hero")!.manifest.defaultProps as { headline: string }).headline,
+      to: "Branch your DB per PR",
+    });
+    expect(res.usage).toEqual({ promptTokens: 0, completionTokens: 0, totalTokens: 0 });
+
     const doc = readDocumentYaml(yamlFile);
-    const hero = doc.sections.find((s) => s.id === "hero-1")!;
-    expect((hero.props as { headline: string }).headline).toBe("Branch your DB");
-    expect((hero.props as { ctas: { label: string }[] }).ctas[0].label).toBe("Get started");
-    expect((hero.props as { variant: string }).variant).toBe("product-ui");
-    // other section untouched by the edit (compare against its pre-edit value)
-    const features = doc.sections.find((s) => s.id === "features-1")!;
-    expect(features.props).toEqual(featuresBefore);
+    expect(
+      (doc.sections.find((s) => s.id === "hero-1")!.props as { headline: string }).headline,
+    ).toBe("Branch your DB per PR");
+    expect(doc.sections.find((s) => s.id === "features-1")!.props).toEqual(featuresBefore);
   });
 
-  it("coerces a boolean via the schema", async () => {
-    const cwd = project();
-    await runEdit({
-      cwd,
-      sectionId: "features-1",
-      sets: [{ path: "items.1.emphasis", value: "true" }],
-    });
-    const doc = readDocumentYaml(join(cwd, "src/content/landing/index.yaml"));
-    const features = doc.sections.find((s) => s.id === "features-1")!;
-    expect((features.props as { items: { emphasis: boolean }[] }).items[1].emphasis).toBe(true);
-  });
-
-  it("rejects an invalid value and writes nothing (last-good preserved)", async () => {
-    const cwd = project();
-    const before = readDocumentYaml(join(cwd, "src/content/landing/index.yaml"));
+  it("requires a non-empty instruction", async () => {
     await expect(
-      runEdit({ cwd, sectionId: "hero-1", sets: [{ path: "headline", value: "" }] }),
-    ).rejects.toThrow();
-    const after = readDocumentYaml(join(cwd, "src/content/landing/index.yaml"));
-    expect(after).toEqual(before);
+      runEdit({ cwd: project(), sectionId: "hero-1", instruction: "   ", llm: fakeHero() }),
+    ).rejects.toThrow(/instruction/i);
   });
 
   it("errors on an unknown section id and lists available ids", async () => {
-    const cwd = project();
-    await expect(runEdit({ cwd, sectionId: "nope-9", sets: [] })).rejects.toThrow(
-      /hero-1, features-1/,
-    );
+    await expect(
+      runEdit({ cwd: project(), sectionId: "nope-9", instruction: "x", llm: fakeHero() }),
+    ).rejects.toThrow(/hero-1, features-1/);
   });
 
-  it("inspect mode (no sets) returns props + editable paths without writing", async () => {
+  it("accepts a token budget and returns usage", async () => {
     const cwd = project();
-    const res = await runEdit({ cwd, sectionId: "hero-1" });
-    expect(res.written).toBe(false);
-    expect(res.editablePaths).toContain("headline");
-    expect(res.editablePaths).toContain("ctas.0.label");
+    const res = await runEdit({
+      cwd,
+      sectionId: "hero-1",
+      instruction: "tweak",
+      llm: fakeHero(),
+      maxTokens: 5,
+    });
+    expect(res.usage.totalTokens).toBe(0); // injected llm reports no usage; budget never trips
+    expect(res.sectionId).toBe("hero-1");
   });
 });
