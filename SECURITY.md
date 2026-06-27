@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Please report security issues **privately** to **info@uppy.ai** (or via GitHub's
+Please report security issues **privately** to **drgoktugasci@gmail.com** (or via GitHub's
 "Report a vulnerability" advisory flow). Do not open public issues for vulnerabilities.
 
 We aim to acknowledge reports within 3 business days and to ship a fix or mitigation

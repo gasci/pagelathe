@@ -91,7 +91,6 @@ oriented:
 | Use the CLI           | [`packages/cli/`](./packages/cli) — the `pagelathe` command                                         |
 | Add or edit a section | [`registry/sections/`](./registry/sections) — one folder per section (Zod schema + Astro component) |
 | See the site engine   | [`registry/app/`](./registry/app) — the Astro project `init` scaffolds                              |
-| Understand the design | [`docs/superpowers/specs/`](./docs/superpowers/specs) — the full spec                               |
 
 Everything else at the root (`LICENSE`, `GOVERNANCE.md`, `SECURITY.md`, the per-tool AI-agent
 guides, CI config) is governance and tooling you can ignore until you need it.

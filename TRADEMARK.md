@@ -11,4 +11,4 @@ You **may not**: use "pagelathe" (or a confusingly similar name) as the name of 
 own product, service, or company; use the logo to imply endorsement; register a domain,
 package, or social handle that suggests you are the official project.
 
-Questions: info@uppy.ai.
+Questions: drgoktugasci@gmail.com.
