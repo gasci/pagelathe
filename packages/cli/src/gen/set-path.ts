@@ -34,7 +34,7 @@ export function resolveSchemaAt(schema: ZodTypeAny, path: Path): ZodTypeAny {
       if (tn !== "ZodObject") throw new Error(`Unknown field "${seg}".`);
       const shape = (cur as { _def: { shape: () => Record<string, ZodTypeAny> } })._def.shape();
       if (!(seg in shape)) throw new Error(`Unknown field "${seg}".`);
-      cur = shape[seg];
+      cur = shape[seg]!;
     }
   }
   return cur;
@@ -70,7 +70,7 @@ export function applySet<T>(value: T, path: Path, leaf: unknown): T {
   const clone = structuredClone(value) as Record<string | number, unknown>;
   let cur: unknown = clone;
   for (let i = 0; i < path.length - 1; i++) {
-    const seg = path[i];
+    const seg = path[i]!;
     if (typeof seg === "number") {
       if (!Array.isArray(cur) || seg < 0 || seg >= cur.length)
         throw new Error(`Index [${seg}] is out of range for "${path.slice(0, i + 1).join(".")}".`);
@@ -79,7 +79,7 @@ export function applySet<T>(value: T, path: Path, leaf: unknown): T {
     }
     cur = (cur as Record<string | number, unknown>)[seg];
   }
-  const last = path[path.length - 1];
+  const last = path[path.length - 1]!;
   if (typeof last === "number") {
     if (!Array.isArray(cur) || last < 0 || last >= cur.length)
       throw new Error(`Index [${last}] is out of range for "${path.join(".")}".`);

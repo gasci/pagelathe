@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import {
-  parsePath,
-  coerceValue,
-  applySet,
-  getAtPath,
-  listLeafPaths,
-} from "../src/gen/set-path.js";
+import { parsePath, coerceValue, applySet, getAtPath, listLeafPaths } from "../src/gen/set-path.js";
 
 const schema = z.object({
   headline: z.string().min(1),
@@ -51,7 +45,9 @@ describe("applySet / getAtPath", () => {
     expect(getAtPath(next, ["eyebrow"])).toBe("New");
   });
   it("rejects out-of-range array index and missing parent", () => {
-    expect(() => applySet({ items: [{ title: "t" }] }, ["items", 5, "title"], "x")).toThrow(/range/);
+    expect(() => applySet({ items: [{ title: "t" }] }, ["items", 5, "title"], "x")).toThrow(
+      /range/,
+    );
     expect(() => applySet({}, ["code", "lang"], "bash")).toThrow(/code/);
   });
 });

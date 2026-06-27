@@ -35,8 +35,9 @@ describe("runEdit", () => {
   it("sets a scalar and a nested array field, leaving other sections intact", async () => {
     const cwd = project();
     const yamlFile = join(cwd, "src/content/landing/index.yaml");
-    const featuresBefore = readDocumentYaml(yamlFile).sections.find((s) => s.id === "features-1")!
-      .props;
+    const featuresBefore = readDocumentYaml(yamlFile).sections.find(
+      (s) => s.id === "features-1",
+    )!.props;
     const res = await runEdit({
       cwd,
       sectionId: "hero-1",
