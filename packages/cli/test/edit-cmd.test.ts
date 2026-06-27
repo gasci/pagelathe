@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ZodType } from "zod";
 import { getSection } from "@pagelathe/sections";
 import { writeDocumentYaml, readDocumentYaml } from "../src/gen/yaml-doc.js";
 import { runEdit } from "../src/commands/edit-cmd.js";
-import type { LlmClient } from "../src/gen/llm.js";
+import { LlmError, type LlmClient } from "../src/gen/llm.js";
 
 const tmps: string[] = [];
 const tmp = () => {
@@ -89,16 +89,27 @@ describe("runEdit", () => {
     ).rejects.toThrow(/hero-1, features-1/);
   });
 
-  it("accepts a token budget and returns usage", async () => {
-    const cwd = project();
+  it("returns token usage (zero for an injected llm)", async () => {
     const res = await runEdit({
-      cwd,
+      cwd: project(),
       sectionId: "hero-1",
       instruction: "tweak",
       llm: fakeHero(),
-      maxTokens: 5,
     });
-    expect(res.usage.totalTokens).toBe(0); // injected llm reports no usage; budget never trips
+    expect(res.usage).toEqual({ promptTokens: 0, completionTokens: 0, totalTokens: 0 });
     expect(res.sectionId).toBe("hero-1");
+  });
+
+  it("propagates an LLM failure and leaves index.yaml untouched (last-good)", async () => {
+    const cwd = project();
+    const yamlFile = join(cwd, "src/content/landing/index.yaml");
+    const before = readFileSync(yamlFile, "utf8");
+    const failing: LlmClient = {
+      generateObject: () => Promise.reject(new LlmError("429", { status: 429, attempts: 3 })),
+    };
+    await expect(
+      runEdit({ cwd, sectionId: "hero-1", instruction: "make it punchier", llm: failing }),
+    ).rejects.toBeInstanceOf(LlmError);
+    expect(readFileSync(yamlFile, "utf8")).toBe(before); // nothing written
   });
 });

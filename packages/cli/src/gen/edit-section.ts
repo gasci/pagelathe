@@ -2,6 +2,7 @@ import { getSection } from "@pagelathe/sections";
 import type { Archetype, SectionType } from "@pagelathe/sections/manifest";
 import type { LlmClient } from "./llm.js";
 import { editSystem } from "./prompts.js";
+import { stripSchemaDefaults } from "./strip-defaults.js";
 
 export interface EditSectionInput {
   type: SectionType | string;
@@ -16,7 +17,10 @@ export interface EditSectionInput {
 export async function editSection(input: EditSectionInput, llm: LlmClient): Promise<unknown> {
   const section = getSection(input.type);
   if (!section) throw new Error(`Unknown section: ${input.type}`);
-  return llm.generateObject(section.propsSchema, {
+  // Strip `.default()` so the model MUST echo every previously-set field: an
+  // omission becomes a validation error (→ re-prompt) instead of Zod silently
+  // re-applying the default and wiping the user's content (e.g. a featured tier).
+  return llm.generateObject(stripSchemaDefaults(section.propsSchema), {
     system: editSystem(String(input.type), String(input.archetype)),
     schemaName: `${input.type}_props`,
     prompt: `Product "${input.product}". Current props for the "${input.type}" section (JSON):

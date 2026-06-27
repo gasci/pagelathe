@@ -33,6 +33,32 @@ describe("editSection", () => {
     expect(seenPrompt).toContain(current.headline);
   });
 
+  it("hands the model a schema that rejects dropped defaulted fields (no silent loss)", async () => {
+    const current = getSection("pricing")!.manifest.defaultProps;
+    // A well-behaved model echoes every field (defaults applied → all present).
+    const complete = getSection("pricing")!.propsSchema.parse(current);
+    let captured: ZodType<unknown> | undefined;
+    const llm: LlmClient = {
+      generateObject: <T>(schema: ZodType<T>) => {
+        captured = schema as ZodType<unknown>;
+        return Promise.resolve(complete as T);
+      },
+    };
+    await editSection(
+      {
+        type: "pricing",
+        currentProps: current,
+        instruction: "change the Team price to $39",
+        archetype: "general",
+        product: "Branchy",
+      },
+      llm,
+    );
+    // pricing tiers[].featured is `.default(false)`; the hardened schema must
+    // reject a tier that omits it rather than silently defaulting to false.
+    expect(() => captured!.parse({ tiers: [{ name: "t" }] })).toThrow();
+  });
+
   it("throws on an unknown section type", async () => {
     const llm: LlmClient = { generateObject: () => Promise.reject(new Error("unused")) };
     await expect(

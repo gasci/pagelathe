@@ -36,5 +36,8 @@ export function editSystem(type: string, archetype: string): string {
   return `You revise the "${type}" section of a ${archetype} developer landing page.
 ${BRAND_RULES}
 You are given the section's current props and an edit instruction. Apply ONLY the requested change
-and keep every other field exactly as given. Return the COMPLETE props object for the section.`;
+and keep every other field exactly as given. Preserving unchanged fields verbatim takes priority
+over the style rules above — apply the banned-words rule only to text you newly write or change for
+this instruction; do NOT rewrite untouched fields to remove pre-existing banned words. Return the
+COMPLETE props object, including every field that was already set.`;
 }

@@ -41,4 +41,26 @@ describe("diffLeaves", () => {
     expect(diffLeaves({ a: 1 }, { a: 1, b: 2 })).toEqual([{ path: "b", from: undefined, to: 2 }]);
     expect(diffLeaves({ a: 1, b: 2 }, { a: 1 })).toEqual([{ path: "b", from: 2, to: undefined }]);
   });
+
+  it("handles array grow, shrink, and empty↔populated transitions", () => {
+    // shrink: dropped element shows from→undefined
+    expect(diffLeaves({ items: [{ t: "a" }, { t: "b" }] }, { items: [{ t: "a" }] })).toEqual([
+      { path: "items.1.t", from: "b", to: undefined },
+    ]);
+    // grow: new element shows undefined→to
+    expect(diffLeaves({ items: [{ t: "a" }] }, { items: [{ t: "a" }, { t: "b" }] })).toEqual([
+      { path: "items.1.t", from: undefined, to: "b" },
+    ]);
+    // empty → populated (an empty array contributes no leaf paths)
+    expect(diffLeaves({ links: [] }, { links: ["x"] })).toEqual([
+      { path: "links.0", from: undefined, to: "x" },
+    ]);
+  });
+
+  it("reports a reorder positionally", () => {
+    expect(diffLeaves({ items: ["a", "b"] }, { items: ["b", "a"] })).toEqual([
+      { path: "items.0", from: "a", to: "b" },
+      { path: "items.1", from: "b", to: "a" },
+    ]);
+  });
 });

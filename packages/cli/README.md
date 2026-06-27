@@ -136,8 +136,9 @@ pagelathe edit hero-1                       # no -i: prompt for the instruction
 ```
 
 `edit` re-fills only that section through the model, bounded by the section's schema, then prints a
-before→after diff. The `--max-tokens` budget guard from `generate` applies. (To add or remove
-sections, use `generate` or hand-edit `index.yaml`.)
+before→after diff and the tokens used. Schema defaults are stripped for the edit so the model must
+echo every field it was given — preventing silent resets. (To add or remove sections, use
+`generate` or hand-edit `index.yaml`.)
 
 > ⚠️ Re-running `generate` regenerates the **whole** page and overwrites `index.yaml`, so commit
 > any hand-edits you want to keep first.

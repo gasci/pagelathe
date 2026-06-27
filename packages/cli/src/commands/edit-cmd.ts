@@ -9,16 +9,8 @@ import { createLlmClient } from "../gen/factory.js";
 import type { LlmClient } from "../gen/llm.js";
 import { editSection } from "../gen/edit-section.js";
 import { diffLeaves, type LeafChange } from "../gen/set-path.js";
-import {
-  TokenMeter,
-  makeBudgetGuard,
-  BudgetAbortError,
-  defaultBudgetConfirm,
-  type BudgetConfirm,
-  type TokenUsage,
-} from "../gen/usage.js";
+import { TokenMeter, type TokenUsage } from "../gen/usage.js";
 import { promptText } from "../ui/prompts.js";
-import { DEFAULT_MAX_TOKENS } from "./generate-cmd.js";
 
 export interface EditOptions {
   cwd?: string;
@@ -29,8 +21,6 @@ export interface EditOptions {
   model?: string;
   /** Injectable for tests; otherwise built from provider config. */
   llm?: LlmClient;
-  maxTokens?: number;
-  confirm?: BudgetConfirm;
   onProgress?: (m: string) => void;
 }
 
@@ -56,10 +46,8 @@ export async function runEdit(opts: EditOptions): Promise<EditResult> {
     throw new Error(`No section with id "${opts.sectionId}". Available ids: ${ids}`);
   }
 
-  const maxTokens = opts.maxTokens ?? DEFAULT_MAX_TOKENS;
   const meter = new TokenMeter();
   meter.onRecord = (_u, agg) => log(`↳ ${agg.totalTokens.toLocaleString()} tokens used so far`);
-  const beforeStep = makeBudgetGuard(meter, maxTokens, opts.confirm ?? defaultBudgetConfirm);
 
   let llm = opts.llm;
   if (!llm) {
@@ -76,7 +64,6 @@ export async function runEdit(opts: EditOptions): Promise<EditResult> {
   }
 
   const before = section.props;
-  await beforeStep();
   log(`Revising ${section.id}…`);
   const newProps = await editSection(
     {
@@ -98,6 +85,13 @@ export async function runEdit(opts: EditOptions): Promise<EditResult> {
   return { yamlPath, sectionId: section.id, props: newProps, changes, usage: meter.usage };
 }
 
+/** Render one leaf change; mark added/removed leaves instead of "→ undefined". */
+function describeChange(c: LeafChange): string {
+  if (c.from === undefined) return `${c.path}: (added) ${JSON.stringify(c.to)}`;
+  if (c.to === undefined) return `${c.path}: ${JSON.stringify(c.from)} (removed)`;
+  return `${c.path}: ${JSON.stringify(c.from)} → ${JSON.stringify(c.to)}`;
+}
+
 export function registerEditCommand(program: Command): void {
   program
     .command("edit <sectionId>")
@@ -108,55 +102,32 @@ export function registerEditCommand(program: Command): void {
       "provider to use (defaults to active: openrouter/gemini/openai)",
     )
     .option("-m, --model <id>", "model id (defaults to the active provider's config)")
-    .option(
-      "--max-tokens <n>",
-      `pause and confirm once this many tokens are used; 0 disables (default ${DEFAULT_MAX_TOKENS})`,
-    )
     .option("--cwd <dir>", "project directory (defaults to the working directory)")
     .action(
       async (
         sectionId: string,
-        options: {
-          instruction?: string;
-          provider?: string;
-          model?: string;
-          maxTokens?: string;
-          cwd?: string;
-        },
+        options: { instruction?: string; provider?: string; model?: string; cwd?: string },
       ) => {
         const provider = options.provider ? assertProvider(options.provider) : undefined;
-        const maxTokens = options.maxTokens !== undefined ? Number(options.maxTokens) : undefined;
-        if (maxTokens !== undefined && Number.isNaN(maxTokens)) {
-          throw new Error("--max-tokens must be a number.");
-        }
         const instruction =
           options.instruction ?? (await promptText(`What should I change in "${sectionId}"?`));
-        try {
-          const res = await runEdit({
-            cwd: options.cwd,
-            sectionId,
-            instruction,
-            provider,
-            model: options.model,
-            maxTokens,
-            onProgress: (m) => console.log(`  ${m}`),
-          });
-          console.log(`\n✓ Revised ${res.sectionId} → ${res.yamlPath}`);
-          if (res.changes.length === 0) console.log("  (no fields changed)");
-          for (const c of res.changes) {
-            console.log(`  ${c.path}: ${JSON.stringify(c.from)} → ${JSON.stringify(c.to)}`);
-          }
-          if (res.usage.totalTokens > 0) {
-            console.log(
-              `  ${res.usage.totalTokens.toLocaleString()} tokens used (prompt ${res.usage.promptTokens.toLocaleString()} / completion ${res.usage.completionTokens.toLocaleString()})`,
-            );
-          }
-        } catch (err) {
-          if (err instanceof BudgetAbortError) {
-            console.log(`\n⚠ ${err.message}`);
-            return;
-          }
-          throw err;
+        const res = await runEdit({
+          cwd: options.cwd,
+          sectionId,
+          instruction,
+          provider,
+          model: options.model,
+          onProgress: (m) => console.log(`  ${m}`),
+        });
+        console.log(`\n✓ Revised ${res.sectionId} → ${res.yamlPath}`);
+        if (res.changes.length === 0) console.log("  (no fields changed)");
+        for (const c of res.changes) {
+          console.log(`  ${describeChange(c)}`);
+        }
+        if (res.usage.totalTokens > 0) {
+          console.log(
+            `  ${res.usage.totalTokens.toLocaleString()} tokens used (prompt ${res.usage.promptTokens.toLocaleString()} / completion ${res.usage.completionTokens.toLocaleString()})`,
+          );
         }
       },
     );
