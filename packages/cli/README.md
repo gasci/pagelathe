@@ -89,7 +89,7 @@ pnpm build    # static site → dist/  (deploy to Vercel, Netlify, GitHub Pages,
 | `pagelathe init [dir]`            | Scaffold a new pagelathe landing project (`-f, --force`)              |
 | `pagelathe generate`              | Generate an on-brand landing page from a product description          |
 | `pagelathe add <section>`         | Vendor a section component from the registry into your project        |
-| `pagelathe edit <id> --set p=v`   | Edit one section's fields in `index.yaml` (no LLM, schema-checked)    |
+| `pagelathe edit <id> -i "…"`      | Revise one section from a prompt (LLM, schema-bounded)                |
 | `pagelathe --version`             | Print the installed version                                           |
 
 ### `generate` options
@@ -127,16 +127,18 @@ every section is schema-bounded:
 - `src/content/landing/index.yaml` — copy, section order, and which sections appear
 - `src/components/sections/*.astro` — markup and styling
 
-Or edit a single field deterministically — no prompt, no tokens, schema-validated:
+Or revise a single section with a prompt — surgical, schema-bounded, the rest of the page untouched:
 
 ```bash
-pagelathe edit hero-1 --set headline="Branch your database per PR"
-pagelathe edit hero-1 --set ctas.0.label="Start free" --set variant=product-ui
-pagelathe edit hero-1                       # no --set: print the section's fields and editable paths
+pagelathe edit hero-1 -i "make the headline punchier and lead with the 3-line install"
+pagelathe edit hero-1 -i "tighten the subhead; mention the free tier"
+pagelathe edit hero-1                       # no -i: prompt for the instruction
 ```
 
-`edit` rewrites only that section and re-validates against its schema, so the rest of your page is
-left exactly as-is. (To add or remove sections, use `generate` or hand-edit `index.yaml`.)
+`edit` re-fills only that section through the model, bounded by the section's schema, then prints a
+before→after diff and the tokens used. Schema defaults are stripped for the edit so the model must
+echo every field it was given — preventing silent resets. (To add or remove sections, use
+`generate` or hand-edit `index.yaml`.)
 
 > ⚠️ Re-running `generate` regenerates the **whole** page and overwrites `index.yaml`, so commit
 > any hand-edits you want to keep first.
