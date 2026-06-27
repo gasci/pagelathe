@@ -78,6 +78,17 @@ every section is schema-bounded:
 - `src/content/landing/index.yaml` — copy, section order, and which sections appear
 - `src/components/sections/*.astro` — markup and styling
 
+Or edit a single field deterministically — no prompt, no tokens, schema-validated:
+
+```bash
+pagelathe edit hero-1 --set headline="Branch your database per PR"
+pagelathe edit hero-1 --set ctas.0.label="Start free" --set variant=product-ui
+pagelathe edit hero-1                       # no --set: print the section's fields and editable paths
+```
+
+`edit` rewrites only that section and re-validates against its schema, so the rest of your page is
+left exactly as-is. (To add or remove sections, use `generate` or hand-edit `index.yaml`.)
+
 > ⚠️ Re-running `generate` regenerates the **whole** page and overwrites `index.yaml`, so commit
 > any hand-edits you want to keep first.
 
