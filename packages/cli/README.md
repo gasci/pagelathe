@@ -78,6 +78,14 @@ pnpm dev      # live preview at http://localhost:4321
 pnpm build    # static site → dist/  (deploy to Vercel, Netlify, GitHub Pages, S3 — anywhere)
 ```
 
+Every generated page ships **light and dark mode** out of the box. It defaults to the visitor's
+system preference (`prefers-color-scheme`) and adds a persisted toggle (bottom-right) that
+switches instantly — with an inline script that applies the saved choice before first paint, so
+there's no flash of the wrong theme. Section colors come from a small set of semantic CSS tokens
+in `src/styles/global.css` (`--color-bg`, `--color-fg`, `--color-muted`, `--color-border`,
+`--color-surface`, `--color-primary`), so you can re-skin both themes in one place, and code
+snippets follow the active theme via Shiki dual themes.
+
 ## Commands
 
 | Command                           | What it does                                                            |

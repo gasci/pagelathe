@@ -11,8 +11,8 @@
 
 Every AI site builder spits out a generic React app. pagelathe is built for **developer
 tools**: code-snippet heroes, multi-language API examples, GitHub/self-host CTAs, honest
-pricing, and anti-fluff copy — emitted as a **static Astro project you fully own** that scores
-~100 on Lighthouse by default.
+pricing, anti-fluff copy, and **built-in light/dark mode** — emitted as a **static Astro
+project you fully own** that scores ~100 on Lighthouse by default.
 
 ## Status
 
@@ -51,6 +51,11 @@ pnpm install && pnpm dev                     # http://localhost:4321
 `generate` classifies your product, plans the sections, and fills on-brand copy and code —
 all bounded by each section's schema, so output is always valid. Edit the generated
 `src/content/landing/index.yaml` or any `src/components/sections/*` to make it yours.
+
+Generated pages ship **light and dark mode** out of the box: they follow the visitor's system
+preference and add a persisted toggle (bottom-right) that switches instantly with no flash on
+load. Every section's colors come from a small set of semantic tokens in
+`src/styles/global.css`, so you can re-skin both themes in one place.
 
 Each provider key is stored only on your machine and sent only to that provider's official API
 (OpenRouter, Google, or OpenAI) — never logged or sent anywhere else. See
