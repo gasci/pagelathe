@@ -68,7 +68,7 @@ pagelathe generate                         # run with no -d to be prompted inter
 # Different voice: regenerate with another provider (uses that provider's default model)
 pagelathe generate --provider gemini -d "A TypeScript SDK for sending transactional email"
 
-# Add a section component from the registry (run with a bad name to list them all)
+# Add a section: vendors the component (if absent) and appends it to the page
 pagelathe add codeDemo
 ```
 
