@@ -38,3 +38,26 @@ describe("global.css theme tokens", () => {
     expect(css).toMatch(/body\s*\{[^}]*color:\s*var\(--fg\)/);
   });
 });
+
+const base = readFileSync(
+  fileURLToPath(new URL("../../app/src/layouts/Base.astro", import.meta.url)),
+  "utf8",
+);
+
+describe("Base.astro theme switching", () => {
+  it("has a no-flash inline script reading persisted theme", () => {
+    expect(base).toContain("is:inline");
+    expect(base).toContain("localStorage.getItem(\"theme\")");
+    expect(base).toContain("classList");
+  });
+
+  it("renders an accessible toggle button", () => {
+    expect(base).toContain("id=\"theme-toggle\"");
+    expect(base).toContain("aria-label");
+  });
+
+  it("toggle persists the choice and respects system preference", () => {
+    expect(base).toContain("localStorage.setItem(\"theme\"");
+    expect(base).toContain("prefers-color-scheme: dark");
+  });
+});
