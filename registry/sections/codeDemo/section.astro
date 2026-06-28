@@ -9,7 +9,10 @@ const { heading, subhead, snippets } = Astro.props as Props;
 const rendered = await Promise.all(
   snippets.map(async (s) => ({
     label: s.label,
-    html: await codeToHtml(s.source, { lang: s.lang, theme: "github-dark" }),
+    html: await codeToHtml(s.source, {
+      lang: s.lang,
+      themes: { light: "github-light", dark: "github-dark" },
+    }),
   })),
 );
 const groupId = `code-${Math.abs(heading.length * 31 + snippets.length)}`;
@@ -17,18 +20,18 @@ const groupId = `code-${Math.abs(heading.length * 31 + snippets.length)}`;
 
 <section class="mx-auto max-w-5xl px-6 py-24" data-section="codeDemo">
   <div class="max-w-2xl">
-    <h2 class="text-3xl font-bold tracking-tight text-white">{heading}</h2>
-    {subhead && <p class="mt-3 text-white/60">{subhead}</p>}
+    <h2 class="text-3xl font-bold tracking-tight text-fg">{heading}</h2>
+    {subhead && <p class="mt-3 text-muted">{subhead}</p>}
   </div>
-  <div class="mt-10 overflow-hidden rounded-[var(--radius)] border border-white/10 bg-black/40" data-codetabs={groupId}>
-    <div class="flex gap-1 border-b border-white/10 px-2 pt-2" role="tablist" aria-label="Code language">
+  <div class="mt-10 overflow-hidden rounded-[var(--radius)] border border-border bg-surface" data-codetabs={groupId}>
+    <div class="flex gap-1 border-b border-border px-2 pt-2" role="tablist" aria-label="Code language">
       {rendered.map((r, i) => (
         <button
           type="button"
           role="tab"
           aria-selected={i === 0 ? "true" : "false"}
           data-tab={i}
-          class="rounded-t-md px-3 py-1.5 text-sm text-white/60 aria-selected:bg-white/5 aria-selected:text-white"
+          class="rounded-t-md px-3 py-1.5 text-sm text-muted aria-selected:bg-surface aria-selected:text-fg"
         >
           {r.label}
         </button>
