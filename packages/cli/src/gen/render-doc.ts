@@ -34,7 +34,10 @@ export function renderList(doc: PageDocument): string {
   const summary = summarizeSections(doc);
   const idW = Math.max(0, ...summary.map((s) => s.id.length));
   const typeW = Math.max(0, ...summary.map((s) => s.type.length));
-  const lines: string[] = [`${doc.meta.title} · ${doc.archetype} · goal: ${doc.meta.primaryGoal}`, ""];
+  const lines: string[] = [
+    `${doc.meta.title} · ${doc.archetype} · goal: ${doc.meta.primaryGoal}`,
+    "",
+  ];
   for (const s of summary) {
     const variant = s.variant ? `  [variant: ${s.variant}]` : "";
     lines.push(`${s.index}. ${s.id.padEnd(idW)}  ${s.type.padEnd(typeW)}${variant}`.trimEnd());
@@ -55,7 +58,8 @@ function scalarText(v: unknown): string {
 /** One-line rendering of an object item as `key: value` pairs of its scalars. */
 function renderInline(item: unknown): string {
   if (isScalar(item)) return scalarText(item);
-  if (Array.isArray(item)) return item.map((el) => (isScalar(el) ? scalarText(el) : renderInline(el))).join(", ");
+  if (Array.isArray(item))
+    return item.map((el) => (isScalar(el) ? scalarText(el) : renderInline(el))).join(", ");
   return Object.entries(item as Record<string, unknown>)
     .filter(([, v]) => isScalar(v))
     .map(([k, v]) => `${k}: ${scalarText(v)}`)

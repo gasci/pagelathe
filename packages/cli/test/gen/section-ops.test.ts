@@ -20,7 +20,11 @@ function doc(): PageDocument {
 }
 
 function entry(type: string, id: string) {
-  return { type, id, props: getSection(type)!.manifest.defaultProps } as PageDocument["sections"][number];
+  return {
+    type,
+    id,
+    props: getSection(type)!.manifest.defaultProps,
+  } as PageDocument["sections"][number];
 }
 
 describe("findSection / nextSectionId", () => {

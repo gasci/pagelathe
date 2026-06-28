@@ -46,7 +46,11 @@ export async function runAdd(type: string, opts: AddOptions = {}): Promise<AddRe
 
   const id = nextSectionId(doc, type);
   const entry = { type, id, props: reg.manifest.defaultProps } as Section;
-  const { doc: next, position, total } = addSection(doc, entry, {
+  const {
+    doc: next,
+    position,
+    total,
+  } = addSection(doc, entry, {
     before: opts.before,
     after: opts.after,
   });
