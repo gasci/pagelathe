@@ -79,12 +79,14 @@ an LLM **bounded by the section schema** and validates the whole document before
 (last-good is preserved on failure):
 
 ```bash
-pagelathe edit hero -i "shorten the headline and make the subheading mention the free tier"
+pagelathe edit hero-1 -i "shorten the headline and make the subheading mention the free tier"
 ```
 
-`edit` writes to `src/content/landing/index.yaml`. Hand-editing that YAML is allowed for small
-literal tweaks, but prefer `edit` for anything an agent would otherwise free-write — it keeps
-output schema-valid. If `edit` reports an unknown section id, it lists the available ids.
+`edit` takes a **section id**, not a type — generated ids are `<type>-1` (e.g. `hero-1`,
+`pricing-1`), whereas `add` takes the bare type (`hero`). `edit` writes to
+`src/content/landing/index.yaml`. Hand-editing that YAML is allowed for small literal tweaks, but
+prefer `edit` for anything an agent would otherwise free-write — it keeps output schema-valid. If
+`edit` reports an unknown section id, it lists the available ids.
 
 ## Common mistakes
 
