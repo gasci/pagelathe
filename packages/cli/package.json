@@ -29,7 +29,8 @@
     "pagelathe": "./dist/bin.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "SKILL.md"
   ],
   "engines": {
     "node": ">=20.11.0"
