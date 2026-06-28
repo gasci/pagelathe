@@ -14,3 +14,15 @@ describe("codeDemo", () => {
     expect(html).toContain("<pre");
   });
 });
+
+describe("codeDemo theme tokens", () => {
+  it("uses semantic tokens and dual-theme shiki, no hardcoded dark classes", async () => {
+    const html = await renderToHtml(CodeDemo, propsSchema.parse(manifest.defaultProps));
+    expect(html).not.toContain("text-white");
+    expect(html).not.toContain("bg-black");
+    expect(html).not.toContain("border-white");
+    expect(html).not.toContain("bg-white");
+    expect(html).toContain("text-fg");
+    expect(html).toContain("--shiki-dark");
+  });
+});
