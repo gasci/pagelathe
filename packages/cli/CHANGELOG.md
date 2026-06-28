@@ -1,5 +1,12 @@
 # pagelathe
 
+## 0.9.1
+
+### Patch Changes
+
+- Document the live token counter and prompt/completion/total cost summary in the npm and GitHub
+  READMEs with a sample `generate` run, so users can see what a run reports before installing.
+
 ## 0.9.0
 
 ### Minor Changes
