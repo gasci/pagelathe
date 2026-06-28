@@ -51,6 +51,12 @@ describe("renderProps / renderSection / renderPage", () => {
     expect(out).toContain("href: /x");
   });
 
+  it("renders array-of-array items inline without garbling", () => {
+    const out = renderProps({ tags: [["a", "b"], ["c"]] });
+    expect(out).toContain("• a, b");
+    expect(out).toContain("• c");
+  });
+
   it("renderSection shows the id, type and variant header", () => {
     const out = renderSection(doc().sections[0]);
     expect(out).toContain("hero-1  (hero, variant: code-snippet)");

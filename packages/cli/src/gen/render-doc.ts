@@ -55,6 +55,7 @@ function scalarText(v: unknown): string {
 /** One-line rendering of an object item as `key: value` pairs of its scalars. */
 function renderInline(item: unknown): string {
   if (isScalar(item)) return scalarText(item);
+  if (Array.isArray(item)) return item.map((el) => (isScalar(el) ? scalarText(el) : renderInline(el))).join(", ");
   return Object.entries(item as Record<string, unknown>)
     .filter(([, v]) => isScalar(v))
     .map(([k, v]) => `${k}: ${scalarText(v)}`)
