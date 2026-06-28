@@ -72,6 +72,21 @@ pagelathe generate --provider gemini -d "A TypeScript SDK for sending transactio
 pagelathe add codeDemo
 ```
 
+### Inspect & manage sections
+
+```bash
+pagelathe list                 # every section, in order, with its content children
+pagelathe show                 # pretty-print the whole page's copy + props
+pagelathe show hero-1          # …or just one section
+pagelathe add pricing --before footer-1   # insert a pricing section (default props)
+pagelathe edit pricing-1 -i "3 tiers: free, pro, enterprise"   # then fill it
+pagelathe remove pricing-1     # remove a section by id
+```
+
+`list` and `show` are read-only and need no API key. `add` inserts a section with placeholder
+defaults (offline) — run `edit` to fill it on-brand. `remove` won't delete the last section, and
+leaves the vendored component file in place.
+
 For surgical, prompt-free edits, change the generated files directly — output stays valid because
 every section is schema-bounded:
 
