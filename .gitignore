@@ -18,3 +18,6 @@ registry/app/src/components/sections/*.astro
 
 # Local design docs (superpowers specs/plans): kept on disk, untracked
 docs/superpowers/
+
+# Local agent-tool config (e.g. the project skill symlink): kept on disk, untracked
+.claude/
