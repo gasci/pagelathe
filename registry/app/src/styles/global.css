@@ -46,6 +46,25 @@
   color-scheme: dark;
 }
 
+/* Theme toggle icon: show the glyph for the active scheme. */
+.theme-icon-dark {
+  display: none;
+}
+:root.dark .theme-icon-light {
+  display: none;
+}
+:root.dark .theme-icon-dark {
+  display: inline;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .theme-icon-light {
+    display: none;
+  }
+  :root:not(.light) .theme-icon-dark {
+    display: inline;
+  }
+}
+
 html {
   font-family: var(--font-sans);
 }
@@ -55,8 +74,8 @@ body {
   color: var(--fg);
 }
 
-/* Shiki dual-theme: light colors are inline (defaultColor "light"); swap to the
-   dark token variables when the dark scheme is active. */
+/* Shiki dual-theme: light colours are emitted inline (Shiki's default); swap to
+   the dark token variables when the dark scheme is active. */
 :root.dark .shiki,
 :root.dark .shiki span {
   color: var(--shiki-dark) !important;
