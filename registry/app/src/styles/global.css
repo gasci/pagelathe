@@ -1,12 +1,48 @@
 @import "tailwindcss";
 
 @theme {
+  /* Semantic tokens resolve to runtime CSS variables defined below, so the
+     same utility (e.g. text-fg) flips with the active color scheme. */
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
   --color-primary: #3a6463;
+  --color-on-primary: #ffffff;
   --radius: 0.5rem;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Light is the default palette. */
 :root {
+  --bg: #ffffff;
+  --fg: #0a0a0a;
+  --muted: #52525b;
+  --border: #e4e4e7;
+  --surface: #f4f4f5;
+  color-scheme: light;
+}
+
+/* Dark via system preference — unless the visitor forced light. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bg: #0a0a0a;
+    --fg: #fafafa;
+    --muted: #a1a1aa;
+    --border: rgba(255, 255, 255, 0.1);
+    --surface: rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+  }
+}
+
+/* Dark via explicit toggle — wins over the media query. */
+:root.dark {
+  --bg: #0a0a0a;
+  --fg: #fafafa;
+  --muted: #a1a1aa;
+  --border: rgba(255, 255, 255, 0.1);
+  --surface: rgba(0, 0, 0, 0.4);
   color-scheme: dark;
 }
 
@@ -15,6 +51,19 @@ html {
 }
 
 body {
-  background-color: #0a0a0a;
-  color: #fafafa;
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+/* Shiki dual-theme: light colors are inline (defaultColor "light"); swap to the
+   dark token variables when the dark scheme is active. */
+:root.dark .shiki,
+:root.dark .shiki span {
+  color: var(--shiki-dark) !important;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .shiki,
+  :root:not(.light) .shiki span {
+    color: var(--shiki-dark) !important;
+  }
 }
