@@ -80,17 +80,20 @@ pnpm build    # static site → dist/  (deploy to Vercel, Netlify, GitHub Pages,
 
 ## Commands
 
-| Command                           | What it does                                                          |
-| --------------------------------- | --------------------------------------------------------------------- |
-| `pagelathe config set-key [key]`  | Store an API key for a provider (`-p <provider>`, prompts if omitted) |
-| `pagelathe config use <provider>` | Set the active provider: `openrouter`, `gemini`, or `openai`          |
-| `pagelathe config set-model <id>` | Set the default model for a provider (`-p <provider>`)                |
-| `pagelathe config show`           | Show providers, keys (masked), and default models                     |
-| `pagelathe init [dir]`            | Scaffold a new pagelathe landing project (`-f, --force`)              |
-| `pagelathe generate`              | Generate an on-brand landing page from a product description          |
-| `pagelathe add <section>`         | Vendor a section component from the registry into your project        |
-| `pagelathe edit <id> -i "…"`      | Revise one section from a prompt (LLM, schema-bounded)                |
-| `pagelathe --version`             | Print the installed version                                           |
+| Command                           | What it does                                                            |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| `pagelathe config set-key [key]`  | Store an API key for a provider (`-p <provider>`, prompts if omitted)   |
+| `pagelathe config use <provider>` | Set the active provider: `openrouter`, `gemini`, or `openai`            |
+| `pagelathe config set-model <id>` | Set the default model for a provider (`-p <provider>`)                  |
+| `pagelathe config show`           | Show providers, keys (masked), and default models                       |
+| `pagelathe init [dir]`            | Scaffold a new pagelathe landing project (`-f, --force`)                |
+| `pagelathe generate`              | Generate an on-brand landing page from a product description            |
+| `pagelathe add <section>`         | Add a section: vendor its component (if needed) + append it to the page |
+| `pagelathe list`                  | List the project's sections and their content children                  |
+| `pagelathe show [sectionId]`      | Pretty-print the generated content (whole page or one section)          |
+| `pagelathe remove <sectionId>`    | Remove a section from the page                                          |
+| `pagelathe edit <id> -i "…"`      | Revise one section from a prompt (LLM, schema-bounded)                  |
+| `pagelathe --version`             | Print the installed version                                             |
 
 ### `generate` options
 
@@ -120,6 +123,21 @@ pagelathe generate --provider gemini -d "A TypeScript SDK for sending transactio
 # Add a section component from the registry (run with a bad name to list them all)
 pagelathe add codeDemo
 ```
+
+### Inspect & manage sections
+
+```bash
+pagelathe list                 # every section, in order, with its content children
+pagelathe show                 # pretty-print the whole page's copy + props
+pagelathe show hero-1          # …or just one section
+pagelathe add pricing --before footer-1   # insert a pricing section (default props)
+pagelathe edit pricing-1 -i "3 tiers: free, pro, enterprise"   # then fill it
+pagelathe remove pricing-1     # remove a section by id
+```
+
+`list` and `show` are read-only and need no API key. `add` inserts a section with placeholder
+defaults (offline) — run `edit` to fill it on-brand. `remove` won't delete the last section, and
+leaves the vendored component file in place.
 
 For surgical, prompt-free edits, change the generated files directly — output stays valid because
 every section is schema-bounded:

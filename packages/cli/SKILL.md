@@ -55,7 +55,10 @@ disables). `-p/--provider` and `-m/--model` override the active config per run.
 | -------------------------------- | ------------------------------------------------------ |
 | Generate a page (auto-scaffolds) | `pagelathe generate -d "<product description>"`        |
 | Empty scaffold only, no AI       | `pagelathe init [dir]` (`--force` for a non-empty dir) |
-| Vendor a section component       | `pagelathe add <section>` (`--force` to overwrite)     |
+| Add a section to the page        | `pagelathe add <section>` (`--before`/`--after <id>`)  |
+| List sections + their children   | `pagelathe list`                                       |
+| Pretty-print content             | `pagelathe show [sectionId]`                           |
+| Remove a section                 | `pagelathe remove <sectionId>`                         |
 | Revise one section's content     | `pagelathe edit <sectionId> -i "<what to change>"`     |
 | Manage providers / keys          | `pagelathe config set-key\|use\|set-model\|show`       |
 
@@ -88,11 +91,16 @@ pagelathe edit hero-1 -i "shorten the headline and make the subheading mention t
 prefer `edit` for anything an agent would otherwise free-write — it keeps output schema-valid. If
 `edit` reports an unknown section id, it lists the available ids.
 
+Use `pagelathe list` to see every section id and its child content at a glance, and
+`pagelathe show <id>` to read one section's full copy before editing. `add <type>` appends a
+section with placeholder defaults (then `edit` it); `remove <id>` drops one (the last section
+can't be removed).
+
 ## Common mistakes
 
 | Mistake                                                    | Do instead                                                                             |
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Hand-writing `.astro` sections or inventing copy           | Use `generate` / `add` / `edit` — output is schema-bounded                             |
+| Hand-writing `.astro` sections or inventing copy           | Use `generate` / `add` / `edit` / `list` / `show` — output is schema-bounded           |
 | Running `pagelathe init` before `generate` in an empty dir | Just run `generate` — it scaffolds for you                                             |
 | "No key found" error                                       | `pagelathe config set-key --provider <p>` or export the env var, then `config use <p>` |
 | Pasting the user's key anywhere but the provider           | Keys go only to that provider's official API — never log or echo a key in full         |
