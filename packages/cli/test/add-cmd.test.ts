@@ -57,6 +57,13 @@ describe("runAdd", () => {
     expect(before.position).toBe(2);
   });
 
+  it("places --after a target id", async () => {
+    const after = await runAdd("pricing", { cwd: project(["hero-1", "footer-1"]), after: "hero-1" });
+    const doc = readDocumentYaml(after.yamlPath);
+    expect(doc.sections.map((s) => s.id)).toEqual(["hero-1", "pricing-1", "footer-1"]);
+    expect(after.position).toBe(2);
+  });
+
   it("skips re-vendoring when the component exists, but --force re-copies", async () => {
     const cwd = project();
     await runAdd("pricing", { cwd }); // vendors pricing.astro
