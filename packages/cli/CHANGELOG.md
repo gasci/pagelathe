@@ -1,5 +1,15 @@
 # pagelathe
 
+## 0.9.0
+
+### Minor Changes
+
+- 843a3ec: Generated landing pages now support light and dark mode. Pages default to the
+  visitor's OS color-scheme preference and include a persisted toggle (top-right)
+  with no flash of the wrong theme on load. Section components were refactored onto
+  a semantic color-token layer, and code snippets follow the active theme via
+  Shiki dual themes.
+
 ## 0.8.0
 
 ### Minor Changes
