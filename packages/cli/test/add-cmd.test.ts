@@ -51,14 +51,20 @@ describe("runAdd", () => {
   });
 
   it("places --before and --after a target id", async () => {
-    const before = await runAdd("pricing", { cwd: project(["hero-1", "footer-1"]), before: "footer-1" });
+    const before = await runAdd("pricing", {
+      cwd: project(["hero-1", "footer-1"]),
+      before: "footer-1",
+    });
     const doc = readDocumentYaml(join(before.yamlPath));
     expect(doc.sections.map((s) => s.id)).toEqual(["hero-1", "pricing-1", "footer-1"]);
     expect(before.position).toBe(2);
   });
 
   it("places --after a target id", async () => {
-    const after = await runAdd("pricing", { cwd: project(["hero-1", "footer-1"]), after: "hero-1" });
+    const after = await runAdd("pricing", {
+      cwd: project(["hero-1", "footer-1"]),
+      after: "hero-1",
+    });
     const doc = readDocumentYaml(after.yamlPath);
     expect(doc.sections.map((s) => s.id)).toEqual(["hero-1", "pricing-1", "footer-1"]);
     expect(after.position).toBe(2);

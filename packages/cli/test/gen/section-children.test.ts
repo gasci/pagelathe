@@ -25,7 +25,9 @@ describe("summarizeChildren", () => {
 
   it("caps labels at 3 but keeps the true count", () => {
     const props = { items: [{ title: "a" }, { title: "b" }, { title: "c" }, { title: "d" }] };
-    expect(summarizeChildren(props)).toEqual([{ prop: "items", count: 4, labels: ["a", "b", "c"] }]);
+    expect(summarizeChildren(props)).toEqual([
+      { prop: "items", count: 4, labels: ["a", "b", "c"] },
+    ]);
   });
 
   it("handles string-array items and falls back to item N", () => {
