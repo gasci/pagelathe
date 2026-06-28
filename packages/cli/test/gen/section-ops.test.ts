@@ -70,6 +70,17 @@ describe("removeSection", () => {
     expect(d.sections).toHaveLength(2);
   });
 
+  it("reports typeStillUsed when another section shares the removed type", () => {
+    const twoHeroes = {
+      ...doc(),
+      sections: [entry("hero", "hero-1"), entry("hero", "hero-2")],
+    } as PageDocument;
+    const { doc: next, removed, typeStillUsed } = removeSection(twoHeroes, "hero-1");
+    expect(removed.id).toBe("hero-1");
+    expect(typeStillUsed).toBe(true);
+    expect(next.sections.map((s) => s.id)).toEqual(["hero-2"]);
+  });
+
   it("throws on unknown id and on removing the last section", () => {
     expect(() => removeSection(doc(), "nope")).toThrow(/No section with id "nope"/);
     const one = { ...doc(), sections: [doc().sections[0]] } as PageDocument;
