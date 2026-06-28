@@ -4,6 +4,7 @@ import { registerConfigCommand } from "./commands/config-cmd.js";
 import { registerInitCommand } from "./commands/init-cmd.js";
 import { registerAddCommand } from "./commands/add-cmd.js";
 import { registerEditCommand } from "./commands/edit-cmd.js";
+import { registerListCommand } from "./commands/list-cmd.js";
 import { registerGenerateCommand } from "./commands/generate-cmd.js";
 
 export function buildProgram(): Command {
@@ -16,6 +17,7 @@ export function buildProgram(): Command {
   registerInitCommand(program);
   registerAddCommand(program);
   registerEditCommand(program);
+  registerListCommand(program);
   registerGenerateCommand(program);
   return program;
 }
