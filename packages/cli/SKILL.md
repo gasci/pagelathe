@@ -51,16 +51,16 @@ disables). `-p/--provider` and `-m/--model` override the active config per run.
 
 ## Quick reference
 
-| Goal                             | Command                                                |
-| -------------------------------- | ------------------------------------------------------ |
-| Generate a page (auto-scaffolds) | `pagelathe generate -d "<product description>"`        |
-| Empty scaffold only, no AI       | `pagelathe init [dir]` (`--force` for a non-empty dir) |
-| Add a section to the page        | `pagelathe add <section>` (`--before`/`--after <id>`)  |
-| List sections + their children   | `pagelathe list`                                       |
-| Pretty-print content             | `pagelathe show [sectionId]`                           |
-| Remove a section                 | `pagelathe remove <sectionId>`                         |
-| Revise one section's content     | `pagelathe edit <sectionId> -i "<what to change>"`     |
-| Manage providers / keys          | `pagelathe config set-key\|use\|set-model\|show`       |
+| Goal                             | Command                                                                    |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| Generate a page (auto-scaffolds) | `pagelathe generate -d "<product description>"`                            |
+| Empty scaffold only, no AI       | `pagelathe init [dir]` (`--force` for a non-empty dir)                     |
+| Add a section to the page        | `pagelathe add <section>` (`--before`/`--after <id>`, `--force` re-copies) |
+| List sections + their children   | `pagelathe list`                                                           |
+| Pretty-print content             | `pagelathe show [sectionId]`                                               |
+| Remove a section                 | `pagelathe remove <sectionId>`                                             |
+| Revise one section's content     | `pagelathe edit <sectionId> -i "<what to change>"`                         |
+| Manage providers / keys          | `pagelathe config set-key\|use\|set-model\|show`                           |
 
 **Section types:** `hero`, `header`, `footer`, `features`, `codeDemo`, `pricing`, `finalCta`.
 
