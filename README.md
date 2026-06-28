@@ -35,6 +35,35 @@ pnpm install && pnpm dev                 # http://localhost:4321
 > **Prerequisites:** Node ≥20.11 for the `pagelathe` CLI; **Node ≥22** to run or build the
 > generated Astro site (the `pnpm dev` / `pnpm build` steps above).
 
+Every `generate` run streams a **live token counter** as it works and prints a **prompt /
+completion / total** summary when it's done, so you always know what it cost:
+
+```text
+$ pagelathe generate -d "A TypeScript SDK for sending transactional email"
+  Classifying product…
+  ↳ 1,318 tokens used so far
+  Archetype: sdk
+  Planning sections…
+  ↳ 4,011 tokens used so far
+  Writing hero…
+  ↳ 6,729 tokens used so far
+  Writing features…
+  ↳ 9,540 tokens used so far
+  Writing codeDemo…
+  ↳ 12,716 tokens used so far
+  Writing pricing…
+  ↳ 15,402 tokens used so far
+  Writing footer…
+  ↳ 17,884 tokens used so far
+
+✓ Generated 5 sections → src/content/landing/index.yaml
+  17,884 tokens used (prompt 12,090 / completion 5,794)
+  Next: pnpm install && pnpm dev
+```
+
+The `--max-tokens` flag (default `100000`) pauses to confirm before a run goes over budget, so a
+runaway generation can't surprise you.
+
 Prefer the **Gemini API** directly (or OpenAI) instead of OpenRouter? Set that provider's key and
 make it active. `generate` **scaffolds the project for you** when the folder isn't one yet, so no
 separate `init` is needed:

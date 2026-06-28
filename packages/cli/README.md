@@ -36,6 +36,32 @@ pnpm install && pnpm dev                     # http://localhost:4321
 > Prefer OpenRouter or OpenAI? Drop the first two lines (OpenRouter is the default) or swap
 > `gemini` for `openai`. See [Providers & API keys](#providers--api-keys) for all three.
 
+A run streams a **live token counter** as it works and prints a **prompt / completion / total**
+summary at the end, so you always know what it cost:
+
+```text
+$ pagelathe generate -d "A TypeScript SDK for sending transactional email"
+  Classifying product…
+  ↳ 1,318 tokens used so far
+  Archetype: sdk
+  Planning sections…
+  ↳ 4,011 tokens used so far
+  Writing hero…
+  ↳ 6,729 tokens used so far
+  Writing features…
+  ↳ 9,540 tokens used so far
+  Writing codeDemo…
+  ↳ 12,716 tokens used so far
+  Writing pricing…
+  ↳ 15,402 tokens used so far
+  Writing footer…
+  ↳ 17,884 tokens used so far
+
+✓ Generated 5 sections → src/content/landing/index.yaml
+  17,884 tokens used (prompt 12,090 / completion 5,794)
+  Next: pnpm install && pnpm dev
+```
+
 `generate` classifies your product, plans the sections, and fills on-brand copy and code — all
 bounded by each section's schema, so output is always valid. In an empty folder it **scaffolds a
 runnable Astro project first** (no separate `pagelathe init` needed); in an existing project it
